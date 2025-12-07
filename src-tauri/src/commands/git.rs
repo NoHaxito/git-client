@@ -406,7 +406,7 @@ pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
     let output = Command::new("git")
         .arg("--no-pager")
         .arg("log")
-        .arg("--pretty=format:{%n  \"hash\": \"%H\",%n  \"author\": \"%an\",%n  \"email\": \"%ae\",%n  \"date\": \"%ad\",%n  \"message\": \"%f\"%n},")
+        .arg("--pretty=format:{%n  \"hash\": \"%H\",%n  \"author\": \"%an\",%n  \"email\": \"%ae\",%n  \"date\": \"%ad\",%n  \"message\": \"%s\"%n},")
         .arg("--date=iso")
         .current_dir(repo)
         .output()
