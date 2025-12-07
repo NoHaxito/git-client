@@ -1,10 +1,10 @@
+import { OpenProjectModal } from "@/components/modals/open-project-modal";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { OpenProjectModal } from "@/components/modals/open-project-modal";
 import { Button } from "./ui/button";
 
 export function EmptyWorkspace() {

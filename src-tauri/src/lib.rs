@@ -6,7 +6,6 @@ use commands::git::{
     get_git_branches, get_git_commits, get_git_status, get_git_version, is_git_repo,
     list_git_repos,
 };
-use commands::syntax::highlight_code;
 use commands::system::get_system_info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -30,8 +29,7 @@ pub fn run() {
             get_git_commits,
             get_commit_details,
             list_directory,
-            read_file,
-            highlight_code
+            read_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
