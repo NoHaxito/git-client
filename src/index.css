@@ -144,7 +144,7 @@
     scrollbar-color: var(--color-neutral-500) transparent;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-sidebar text-foreground;
   }
   .root {
     isolation: isolate;

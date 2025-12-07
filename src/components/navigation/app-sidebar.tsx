@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  FileTextIcon,
-  FolderGit2Icon,
-  GitCommitIcon,
-  SearchIcon,
-} from "lucide-react";
+import { FileTextIcon, GitCommitIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
 import { CommitsList } from "@/components/commits-list";
-import { FileTree } from "@/components/file-tree";
+import { FileTree } from "@/components/file-tree/file-tree";
 import {
   Sidebar,
   SidebarContent,
@@ -71,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar
-      className="h-full max-h-[calc(100vh-1.75rem)] overflow-hidden *:data-[sidebar=sidebar]:flex-row"
+      className="h-full overflow-hidden *:data-[sidebar=sidebar]:flex-row"
       collapsible="icon"
       {...props}
     >
@@ -79,21 +74,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         className="h-full w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
         collapsible="none"
       >
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton className="p-0 md:h-8" size="lg">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <FolderGit2Icon className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent className="px-0">
@@ -157,8 +137,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           </div>
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="px-0 py-0">
+        <SidebarContent className="overflow-x-hidden">
+          <SidebarGroup>
             <SidebarGroupContent>
               {!currentRepo && (
                 <div className="flex items-center justify-center p-4 text-muted-foreground text-sm">

@@ -33,20 +33,22 @@ export function App() {
             initial={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
+            <StatusBar />
             <SidebarProvider
-              className="min-h-[calc(100vh-1.75rem)]"
+              className="min-h-[calc(100vh-2.5rem)]"
               style={
                 {
                   "--sidebar-width": "380.5px",
+                  "--header-height": "2.5rem",
                 } as React.CSSProperties
               }
             >
               <AppSidebar />
-              <SidebarInset className="flex min-h-[calc(100vh-1.75rem)] flex-col bg-sidebar/50">
+
+              <SidebarInset className="m-2 flex max-h-[calc(100vh-var(--header-height))] flex-col overflow-y-scroll rounded-xl">
                 <MainView />
               </SidebarInset>
             </SidebarProvider>
-            <StatusBar />
           </motion.div>
         )}
       </AnimatePresence>

@@ -46,17 +46,15 @@ export function FileViewer() {
     <ContextMenu>
       <ContextMenuTrigger
         render={
-          <div className="flex min-h-[calc(100vh-1.75rem)] w-full flex-1 overflow-x-scroll overflow-y-scroll bg-background" />
+          <CodeEditor
+            filePath={openFilePath}
+            key={openFilePath}
+            language={getFileName(openFilePath)}
+            readOnly
+            value={fileContent}
+          />
         }
-      >
-        <CodeEditor
-          filePath={openFilePath}
-          key={openFilePath}
-          language={getFileName(openFilePath)}
-          readOnly
-          value={fileContent}
-        />
-      </ContextMenuTrigger>
+      />
       <ContextMenuPopup>
         <ContextMenuItem onClick={handleCloseFile}>
           <XIcon className="size-4" />
