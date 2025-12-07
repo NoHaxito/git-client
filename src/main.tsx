@@ -1,0 +1,18 @@
+import ReactDOM from "react-dom/client";
+
+import { ThemeProvider } from "@/components/theme-provider";
+import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { App } from "./App";
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <TooltipProvider delay={100}>
+    <ThemeProvider defaultTheme="system">
+      <ToastProvider>
+        <AnchoredToastProvider>
+          <App />
+        </AnchoredToastProvider>
+      </ToastProvider>
+    </ThemeProvider>
+  </TooltipProvider>
+);

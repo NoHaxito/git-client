@@ -1,0 +1,42 @@
+[keywords]
+patterns = [
+  "important", "url", "var", "calc", "attr", "rgb", "rgba", "hsl", "hsla", "linear-gradient", "radial-gradient", "repeat", "no-repeat", "fixed", "absolute", "relative", "static", "sticky", "block", "inline", "flex", "grid", "none", "auto", "inherit", "initial", "unset"
+]
+color = "86, 156, 214"
+
+[types]
+patterns = [
+  "px", "em", "rem", "vh", "vw", "vmin", "vmax", "%", "deg", "rad", "grad", "turn", "s", "ms", "Hz", "kHz"
+]
+color = "78, 201, 176"
+
+[comments]
+patterns = [
+  "/\\*[\\s\\S]*?\\*/"
+]
+color = "106, 153, 85"
+
+[strings]
+patterns = [
+  "\"([^\"\\\\]|\\\\.)*\"", "'([^'\\\\]|\\\\.)*'"
+]
+color = "206, 145, 120"
+
+[numbers]
+patterns = [
+  "\\b\\d+(\\.\\d+)?\\b"
+]
+color = "181, 206, 168"
+
+[operators]
+patterns = [
+  ":", ";", "\\{", "\\}", "\\[", "\\]", "=", "~", "\\|", "\\^", "\\$", "\\*", "\\+", "\\?", "\\(", "\\)", ",", "\\."
+]
+color = "212, 212, 212"
+
+[methods]
+patterns = [
+  "@[a-zA-Z-]+"
+]
+color = "220, 220, 170"
+

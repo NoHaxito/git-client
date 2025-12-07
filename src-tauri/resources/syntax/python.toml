@@ -1,0 +1,42 @@
+[keywords]
+patterns = [
+  "def", "class", "if", "elif", "else", "for", "while", "try", "except", "finally", "raise", "with", "as", "import", "from", "return", "yield", "break", "continue", "pass", "lambda", "and", "or", "not", "in", "is", "None", "True", "False", "async", "await", "global", "nonlocal", "del", "assert"
+]
+color = "86, 156, 214"
+
+[types]
+patterns = [
+  "int", "float", "str", "bool", "list", "dict", "tuple", "set", "frozenset", "bytes", "bytearray", "complex", "object", "type", "NoneType"
+]
+color = "78, 201, 176"
+
+[comments]
+patterns = [
+  "#.*"
+]
+color = "106, 153, 85"
+
+[strings]
+patterns = [
+  "\"([^\"\\\\]|\\\\.)*\"", "'([^'\\\\]|\\\\.)*'", "\"\"\"[\\s\\S]*?\"\"\"", "'''[\\s\\S]*?'''"
+]
+color = "206, 145, 120"
+
+[numbers]
+patterns = [
+  "\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b", "\\b0[xX][0-9a-fA-F]+\\b", "\\b0[oO][0-7]+\\b", "\\b0[bB][01]+\\b"
+]
+color = "181, 206, 168"
+
+[operators]
+patterns = [
+  "\\+", "-", "\\*", "/", "//", "%", "\\*\\*", "=", "==", "!=", "<", ">", "<=", ">=", "and", "or", "not", "in", "is", "\\+=", "-=", "\\*=", "/=", "//=", "%=", "\\*\\*=", ":=", "\\?", ":", "\\.", "\\.\\.\\."
+]
+color = "212, 212, 212"
+
+[methods]
+patterns = [
+  "\\b\\w+\\s*\\("
+]
+color = "220, 220, 170"
+

@@ -1,0 +1,60 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: hover */
+/** biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: hover */
+import { useCallback, useMemo, useState } from "react";
+import { CodeLine } from "./code-editor/components/code-line";
+import { LineNumbers } from "./code-editor/components/line-numbers";
+import { useGitBlame } from "./code-editor/hooks/use-git-blame";
+import { useSyntaxHighlighting } from "./code-editor/hooks/use-syntax-highlighting";
+import type { CodeEditorProps } from "./code-editor/types";
+
+export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
+  const { highlightedTokens } = useSyntaxHighlighting(value, language);
+  const blameData = useGitBlame(filePath);
+  const [activeLine, setActiveLine] = useState<number | null>(null);
+
+  const plainLines = useMemo(() => {
+    if (!value) {
+      return [];
+    }
+    return value.split("\n");
+  }, [value]);
+
+  const lineCount = plainLines.length;
+
+  const getBlameData = useCallback(
+    (lineIndex: number) =>
+      blameData.find((blame) => blame.line_number === lineIndex + 1),
+    [blameData]
+  );
+
+  const hasBlameData = blameData.length > 0;
+
+  return (
+    <div className="flex flex-1 font-mono text-sm">
+      <LineNumbers lineCount={lineCount} />
+      <div className="z-[1] grid w-full min-w-0">
+        <pre className="grid w-full min-w-0">
+          <code className="block whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
+            {highlightedTokens.map((line, lineIndex) => (
+              <div
+                className="group relative leading-normal hover:bg-accent/50"
+                key={`line-${lineIndex}`}
+                onMouseEnter={() => setActiveLine(lineIndex)}
+                onMouseLeave={() => setActiveLine(null)}
+              >
+                <CodeLine
+                  blameLine={hasBlameData ? getBlameData(lineIndex) : undefined}
+                  isActive={activeLine === lineIndex}
+                  line={line}
+                  lineIndex={lineIndex}
+                />
+              </div>
+            ))}
+          </code>
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+export type { CodeEditorProps } from "./code-editor/types";
