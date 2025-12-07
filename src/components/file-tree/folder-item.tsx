@@ -26,7 +26,10 @@ export function FolderItem({
     <>
       <ItemContextMenu path={node.path} rootPath={rootPath}>
         <SidebarMenuButton
-          className="h-6 gap-1.5 px-1.5 text-xs"
+          className={cn(
+            "h-6 gap-1.5 px-1.5 text-xs",
+            node.isIgnored && "opacity-50"
+          )}
           data-state={isExpanded ? "open" : "closed"}
           onClick={onToggle}
           size="sm"

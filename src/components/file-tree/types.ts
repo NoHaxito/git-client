@@ -17,5 +17,6 @@ export type FileTreeNode = DirectoryEntry & {
   children?: FileTreeNode[];
   expanded?: boolean;
   gitStatus?: GitStatus;
+  isIgnored?: boolean;
 };
 

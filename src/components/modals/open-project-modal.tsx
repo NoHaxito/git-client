@@ -3,6 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { FolderOpen, GitBranch } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +25,7 @@ const store = new LazyStore(".settings.dat");
 const PATH_SEPARATOR_REGEX = /[/\\]/;
 
 export function OpenProjectModal() {
+  const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [repos, setRepos] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,6 +95,8 @@ export function OpenProjectModal() {
       }
       setRepo(path);
       setOpenDialog(false);
+      window.history.replaceState(null, "", "/project/files");
+      navigate("/project/files", { replace: true });
     } catch (error) {
       console.error("Error opening project:", error);
       toastManager.add({
@@ -175,8 +179,12 @@ export function OpenProjectModal() {
           </div>
         </DialogPanel>
         <DialogFooter>
-          <Button onClick={handleSelectFolder} variant="outline">
-            <FolderOpen className="mr-2 size-4" />
+          <Button
+            className="hover:[&>svg]:fill-current"
+            onClick={handleSelectFolder}
+            variant="outline"
+          >
+            <FolderOpen className="size-4" />
             Select Folder
           </Button>
         </DialogFooter>

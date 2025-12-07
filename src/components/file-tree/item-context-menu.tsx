@@ -1,9 +1,11 @@
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import {
+  ArrowRightIcon,
   CopyIcon,
   FolderOpenIcon,
   Trash2Icon,
 } from "lucide-react";
+import { Link } from "react-router";
 import type { ContextMenuTrigger as ContextMenuTriggerComponent } from "@/components/ui/context-menu";
 import {
   ContextMenu,
@@ -54,6 +56,10 @@ export function ItemContextMenu({
     <ContextMenu>
       <ContextMenuTrigger render={children} />
       <ContextMenuPopup className="outline-none">
+        <ContextMenuItem render={<Link to={`/project/files/${path}`} />}>
+          <ArrowRightIcon className="size-4 group-data-highlighted:fill-current" />
+          Open
+        </ContextMenuItem>
         <ContextMenuItem onClick={handleReveal}>
           <FolderOpenIcon className="size-4 group-data-highlighted:fill-current" />
           Reveal in File Explorer
@@ -78,4 +84,3 @@ export function ItemContextMenu({
     </ContextMenu>
   );
 }
-

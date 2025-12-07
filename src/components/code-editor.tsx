@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: hover */
 /** biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: hover */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { CodeLine } from "./code-editor/components/code-line";
 import { LineNumbers } from "./code-editor/components/line-numbers";
 import { useGitBlame } from "./code-editor/hooks/use-git-blame";
@@ -10,7 +10,6 @@ import type { CodeEditorProps } from "./code-editor/types";
 export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
   const { highlightedTokens } = useSyntaxHighlighting(value, language);
   const blameData = useGitBlame(filePath);
-  const [activeLine, setActiveLine] = useState<number | null>(null);
 
   const plainLines = useMemo(() => {
     if (!value) {
@@ -32,19 +31,16 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
   return (
     <div className="flex flex-1 font-mono text-sm">
       <LineNumbers lineCount={lineCount} />
-      <div className="z-[1] grid w-full min-w-0">
+      <div className="z-1 grid w-full min-w-0">
         <pre className="grid w-full min-w-0">
           <code className="block whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
             {highlightedTokens.map((line, lineIndex) => (
               <div
-                className="group relative leading-normal hover:bg-accent/50"
+                className="group/line leading-normal hover:bg-accent/50"
                 key={`line-${lineIndex}`}
-                onMouseEnter={() => setActiveLine(lineIndex)}
-                onMouseLeave={() => setActiveLine(null)}
               >
                 <CodeLine
                   blameLine={hasBlameData ? getBlameData(lineIndex) : undefined}
-                  isActive={activeLine === lineIndex}
                   line={line}
                   lineIndex={lineIndex}
                 />

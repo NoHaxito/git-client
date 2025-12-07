@@ -1,9 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { SidebarMenuItem } from "@/components/ui/sidebar";
-import { useFileStore } from "@/stores/file";
 import { FileItem } from "./file-item";
 import { FolderItem } from "./folder-item";
+import { checkIfIgnored } from "./gitignore-utils";
 import type { FileTreeNode, GitStatus } from "./types";
 import { normalizePath } from "./utils";
 
@@ -11,13 +12,24 @@ type FileTreeItemProps = {
   node: FileTreeNode;
   rootPath: string;
   gitStatus: Record<string, string>;
+  gitignorePatterns: string[];
 };
 
-export function FileTreeItem({ node, rootPath, gitStatus }: FileTreeItemProps) {
+export function FileTreeItem({
+  node,
+  rootPath,
+  gitStatus,
+  gitignorePatterns,
+}: FileTreeItemProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(node.expanded ?? false);
   const [children, setChildren] = useState<FileTreeNode[]>(node.children ?? []);
   const [isLoadingChildren, setIsLoadingChildren] = useState(false);
-  const openFilePath = useFileStore((state) => state.openFilePath);
+
+  const currentFilePath = location.pathname.startsWith("/project/files/")
+    ? decodeURIComponent(location.pathname.replace("/project/files/", ""))
+    : null;
 
   useEffect(() => {
     setIsExpanded(node.expanded ?? false);
@@ -42,11 +54,17 @@ export function FileTreeItem({ node, rootPath, gitStatus }: FileTreeItemProps) {
       const treeNodes: FileTreeNode[] = entries.map((entry) => {
         const entryRelativePath = normalizePath(entry.path, rootPath);
         const status = gitStatus[entryRelativePath] as GitStatus | undefined;
+        const isIgnored = checkIfIgnored(
+          entry.path,
+          rootPath,
+          gitignorePatterns
+        );
         return {
           ...entry,
           expanded: false,
           children: [],
           gitStatus: status || null,
+          isIgnored,
         };
       });
 
@@ -56,7 +74,14 @@ export function FileTreeItem({ node, rootPath, gitStatus }: FileTreeItemProps) {
     } finally {
       setIsLoadingChildren(false);
     }
-  }, [node.is_dir, node.path, children.length, rootPath, gitStatus]);
+  }, [
+    node.is_dir,
+    node.path,
+    children.length,
+    rootPath,
+    gitStatus,
+    gitignorePatterns,
+  ]);
 
   useEffect(() => {
     if (
@@ -80,31 +105,19 @@ export function FileTreeItem({ node, rootPath, gitStatus }: FileTreeItemProps) {
     setIsExpanded(!isExpanded);
   };
 
-  const setOpenFile = useFileStore((state) => state.setOpenFile);
-  const setFileLoading = useFileStore((state) => state.setIsLoading);
-
   const handleFileClick = useCallback(
-    async (filePath: string) => {
-      setOpenFile(filePath);
-      setFileLoading(true);
-      try {
-        const content = await invoke<string>("read_file", { path: filePath });
-        useFileStore.getState().setFileContent(content);
-      } catch (error) {
-        console.error("Error reading file:", error);
-        useFileStore.getState().setFileContent(null);
-      } finally {
-        setFileLoading(false);
-      }
+    (filePath: string) => {
+      const encodedPath = encodeURIComponent(filePath);
+      navigate(`/project/files/${encodedPath}`);
     },
-    [setOpenFile, setFileLoading]
+    [navigate]
   );
 
   if (!node.is_dir) {
     return (
       <SidebarMenuItem>
         <FileItem
-          isActive={openFilePath === node.path}
+          isActive={currentFilePath === node.path}
           node={node}
           onFileClick={handleFileClick}
           rootPath={rootPath}
@@ -124,6 +137,7 @@ export function FileTreeItem({ node, rootPath, gitStatus }: FileTreeItemProps) {
       >
         {children.map((child) => (
           <FileTreeItem
+            gitignorePatterns={gitignorePatterns}
             gitStatus={gitStatus}
             key={child.path}
             node={child}

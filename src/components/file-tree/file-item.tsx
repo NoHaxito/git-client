@@ -24,7 +24,10 @@ export function FileItem({
   return (
     <ItemContextMenu path={node.path} rootPath={rootPath}>
       <SidebarMenuButton
-        className="h-6 gap-1.5 px-1.5 text-xs"
+        className={cn(
+          "h-6 gap-1.5 px-1.5 text-xs",
+          node.isIgnored && "opacity-50"
+        )}
         isActive={isActive}
         onClick={() => onFileClick(node.path)}
         size="sm"

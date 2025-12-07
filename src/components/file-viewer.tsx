@@ -1,4 +1,5 @@
 import { XIcon } from "lucide-react";
+import { useNavigate } from "react-router";
 import { CodeEditor } from "@/components/code-editor";
 import { useFileStore } from "@/stores/file";
 import {
@@ -15,11 +16,15 @@ function getFileName(path: string): string {
   return parts.at(-1) || path;
 }
 
-export function FileViewer() {
-  const openFilePath = useFileStore((state) => state.openFilePath);
-  const fileContent = useFileStore((state) => state.fileContent);
+type FileViewerProps = {
+  filePath: string;
+  fileContent: string | null;
+};
 
-  if (!openFilePath) {
+export function FileViewer({ filePath, fileContent }: FileViewerProps) {
+  const navigate = useNavigate();
+
+  if (!filePath) {
     return (
       <div className="flex h-full flex-1 items-center justify-center">
         <div className="text-muted-foreground text-sm">No file selected</div>
@@ -39,20 +44,22 @@ export function FileViewer() {
   }
 
   const handleCloseFile = () => {
-    useFileStore.setState({ openFilePath: null, fileContent: null });
+    navigate("/project/files");
   };
 
   return (
     <ContextMenu>
       <ContextMenuTrigger
         render={
-          <CodeEditor
-            filePath={openFilePath}
-            key={openFilePath}
-            language={getFileName(openFilePath)}
-            readOnly
-            value={fileContent}
-          />
+          <div className="flex flex-1">
+            <CodeEditor
+              filePath={filePath}
+              key={filePath}
+              language={getFileName(filePath)}
+              readOnly
+              value={fileContent}
+            />
+          </div>
         }
       />
       <ContextMenuPopup>

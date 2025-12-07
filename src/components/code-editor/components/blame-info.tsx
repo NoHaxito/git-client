@@ -20,11 +20,15 @@ export function BlameInfo({ blameLine }: BlameInfoProps) {
     <PreviewCard>
       <PreviewCardTrigger
         render={
-          <span className="-top-[2px] absolute left-full ml-8 inline-flex items-center gap-2 text-muted-foreground" />
+          <span className="absolute left-full inline-flex items-center gap-2 pr-6 pl-6 text-muted-foreground text-sm leading-normal opacity-0 group-hover/line:opacity-100" />
         }
       >
-        <GitBranchIcon className="size-4" />
-        {blameLine.author}, {timeAgo(blameLine.timestamp)}
+        <GitBranchIcon className="size-3" />
+        {blameLine.author}, {timeAgo(blameLine.timestamp)}{" "}
+        <span className="text-muted-foreground text-xs">•</span>
+        <span className="text-muted-foreground text-xs">
+          {blameLine.commit_message.slice(0, 20)}...
+        </span>
       </PreviewCardTrigger>
       <PreviewCardPopup align="center" className="p-2" side="right">
         <div>

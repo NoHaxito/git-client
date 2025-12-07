@@ -2,6 +2,7 @@
 
 import { FileTextIcon, GitCommitIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
+import { useLocation, useNavigate } from "react-router";
 import { CommitsList } from "@/components/commits-list";
 import { FileTree } from "@/components/file-tree/file-tree";
 import {
@@ -23,36 +24,30 @@ import {
   InputGroupInput,
 } from "../ui/input-group";
 
-// This is sample data
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const navMain = [
+  {
+    title: "Files",
+    path: "/project/files",
+    icon: FileTextIcon,
   },
-  navMain: [
-    {
-      title: "Files",
-      url: "#",
-      icon: FileTextIcon,
-      isActive: true,
-    },
-    {
-      title: "Commits",
-      url: "#",
-      icon: GitCommitIcon,
-      isActive: false,
-    },
-  ],
-};
+  {
+    title: "Commits",
+    path: "/project/commits",
+    icon: GitCommitIcon,
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0]);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState("");
   const { setOpen } = useSidebar();
   const currentRepo = useRepoStore((state) => state.currentRepo);
   const currentBranch = useRepoStore((state) => state.currentBranch);
+
+  const isFilesRoute = location.pathname.startsWith("/project/files");
+  const isCommitsRoute = location.pathname === "/project/commits";
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,6 +58,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       clearTimeout(timer);
     };
   }, [searchQuery]);
+
+  React.useEffect(() => {
+    if (!isFilesRoute) {
+      setSearchQuery("");
+    }
+  }, [isFilesRoute]);
 
   return (
     <Sidebar
@@ -78,28 +79,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup>
             <SidebarGroupContent className="px-0">
               <SidebarMenu>
-                {data.navMain.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      className="px-2"
-                      isActive={activeItem?.title === item.title}
-                      onClick={() => {
-                        setActiveItem(item);
-                        setOpen(true);
-                        if (item.title !== "Files") {
-                          setSearchQuery("");
-                        }
-                      }}
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {navMain.map((item) => {
+                  const isActive =
+                    (item.path === "/project/files" && isFilesRoute) ||
+                    (item.path === "/project/commits" && isCommitsRoute);
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        className="px-2"
+                        isActive={isActive}
+                        onClick={() => {
+                          navigate(item.path);
+                          setOpen(true);
+                        }}
+                        tooltip={{
+                          children: item.title,
+                          hidden: false,
+                        }}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -118,9 +121,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarHeader className="gap-3.5">
           <div className="flex w-full items-center justify-between">
             <div className="font-medium text-base text-foreground">
-              {activeItem?.title}
+              {isFilesRoute && "Files"}
+              {isCommitsRoute && "Commits"}
             </div>
-            {activeItem?.title === "Files" && (
+            {isFilesRoute && (
               <div className="flex items-center gap-1">
                 <InputGroup className="h-6 max-w-32">
                   <InputGroupInput
@@ -145,13 +149,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   No repository open
                 </div>
               )}
-              {currentRepo && activeItem?.title === "Commits" && (
+              {currentRepo && isCommitsRoute && (
                 <CommitsList
                   key={`${currentRepo}-${currentBranch || "default"}`}
                   repoPath={currentRepo}
                 />
               )}
-              {currentRepo && activeItem?.title !== "Commits" && (
+              {currentRepo && isFilesRoute && (
                 <FileTree
                   key={`${currentRepo}-${currentBranch || "default"}`}
                   rootPath={currentRepo}
