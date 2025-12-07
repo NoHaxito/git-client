@@ -22,7 +22,11 @@ export function FileItem({
   const statusColor = getStatusColor(node.gitStatus || null);
 
   return (
-    <ItemContextMenu path={node.path} rootPath={rootPath}>
+    <ItemContextMenu
+      hasModifications={node.gitStatus}
+      path={node.path}
+      rootPath={rootPath}
+    >
       <SidebarMenuButton
         className={cn(
           "h-6 gap-1.5 px-1.5 text-xs",

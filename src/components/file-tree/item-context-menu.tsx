@@ -2,6 +2,7 @@ import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import {
   ArrowRightIcon,
   CopyIcon,
+  DiffIcon,
   FolderOpenIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -15,17 +16,21 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { cn } from "@/lib/utils";
+import type { GitStatus } from "./types";
 import { normalizePath } from "./utils";
 
 type ItemContextMenuProps = {
   children: React.ComponentProps<typeof ContextMenuTriggerComponent>["render"];
   path: string;
   rootPath: string;
+  hasModifications?: GitStatus;
 };
 
 export function ItemContextMenu({
   children,
   path,
+  hasModifications,
   rootPath,
 }: ItemContextMenuProps) {
   const handleReveal = async () => {
@@ -56,9 +61,23 @@ export function ItemContextMenu({
     <ContextMenu>
       <ContextMenuTrigger render={children} />
       <ContextMenuPopup className="outline-none">
-        <ContextMenuItem render={<Link to={`/project/files/${path}`} />}>
-          <ArrowRightIcon className="size-4 group-data-highlighted:fill-current" />
+        <ContextMenuItem render={<Link to={`/project/files/view/${path}`} />}>
+          <ArrowRightIcon className="size-4" />
           Open
+        </ContextMenuItem>
+        <ContextMenuItem
+          disabled={!hasModifications}
+          render={
+            <Link
+              className={cn(
+                hasModifications ? "" : "pointer-events-none opacity-50"
+              )}
+              to={`/project/files/diff/${encodeURIComponent(path)}`}
+            />
+          }
+        >
+          <DiffIcon className="size-4" />
+          Open Diff
         </ContextMenuItem>
         <ContextMenuItem onClick={handleReveal}>
           <FolderOpenIcon className="size-4 group-data-highlighted:fill-current" />

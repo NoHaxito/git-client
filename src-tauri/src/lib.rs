@@ -3,8 +3,8 @@ mod commands;
 use commands::fs::{get_disk_space, get_folder_size, list_directory, read_file};
 use commands::git::{
     checkout_git_branch, get_commit_details, get_current_git_branch, get_git_blame,
-    get_git_branches, get_git_commits, get_git_status, get_git_version, is_git_repo,
-    list_git_repos,
+    get_git_branches, get_git_commits, get_git_diff, get_git_status, get_git_version,
+    is_git_repo, list_git_repos,
 };
 use commands::system::get_system_info;
 
@@ -28,6 +28,7 @@ pub fn run() {
             checkout_git_branch,
             get_git_commits,
             get_commit_details,
+            get_git_diff,
             list_directory,
             read_file
         ])

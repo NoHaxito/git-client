@@ -1,10 +1,11 @@
 import { createBrowserRouter, redirect } from "react-router";
-import { useRepoStore } from "@/stores/repo";
 import EmptyRoute from "@/routes/empty";
-import ProjectLayout from "@/routes/project-layout";
+import ProjectCommits from "@/routes/project-commits";
 import ProjectFiles from "@/routes/project-files";
 import ProjectFilesFilepath from "@/routes/project-files-filepath";
-import ProjectCommits from "@/routes/project-commits";
+import ProjectFilesFilepathDiff from "@/routes/project-files-filepath-diff";
+import ProjectLayout from "@/routes/project-layout";
+import { useRepoStore } from "@/stores/repo";
 
 export const router = createBrowserRouter([
   {
@@ -30,7 +31,11 @@ export const router = createBrowserRouter([
         Component: ProjectFiles,
       },
       {
-        path: "files/*",
+        path: "files/diff/*",
+        Component: ProjectFilesFilepathDiff,
+      },
+      {
+        path: "files/view/*",
         Component: ProjectFilesFilepath,
       },
       {
@@ -40,4 +45,3 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
-

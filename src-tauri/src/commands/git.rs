@@ -601,3 +601,43 @@ pub async fn get_commit_details(
         stats: stats.trim().to_string(),
     })
 }
+
+#[tauri::command]
+pub async fn get_git_diff(repo_path: String, file_path: String) -> Result<String, String> {
+    let repo = Path::new(&repo_path);
+
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+
+    // Convert path to relative for git diff
+    let relative_path = Path::new(&file_path)
+        .strip_prefix(repo)
+        .ok()
+        .and_then(|p| p.to_str())
+        .unwrap_or(&file_path);
+
+    let output = Command::new("git")
+        .arg("--no-pager")
+        .arg("diff")
+        .arg("--no-color")
+        .arg("-U999999")
+        .arg(relative_path)
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git diff: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Git diff command failed: {}", stderr));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.to_string())
+}
