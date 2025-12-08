@@ -27,24 +27,19 @@ export function DiffViewer({ filePath, diffContent }: DiffViewerProps) {
         {highlightedLines.map((line, index) => {
           const baseClassName = "py-0.5";
           let lineClassName = "";
-          let prefix = "";
 
           switch (line.type) {
             case "removed":
               lineClassName = "bg-red-500/10 text-red-400";
-              prefix = "-";
               break;
             case "added":
               lineClassName = "bg-green-500/10 text-green-400";
-              prefix = "+";
               break;
             case "context":
               lineClassName = "text-foreground/70";
-              prefix = " ";
               break;
             default:
               lineClassName = "text-foreground/70";
-              prefix = " ";
               break;
           }
 
@@ -58,7 +53,7 @@ export function DiffViewer({ filePath, diffContent }: DiffViewerProps) {
               lineType={line.type}
               newLineNumber={line.newLineNumber}
               oldLineNumber={line.oldLineNumber}
-              prefix={prefix}
+              prefix=""
               tokens={line.tokens}
             />
           );
