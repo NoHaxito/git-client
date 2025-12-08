@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { normalizePath } from "./utils";
+import { useReadFile } from "@/hooks/tauri-queries";
 
 function parseGitignore(content: string): string[] {
   return content
@@ -70,9 +70,21 @@ export function checkIfIgnored(
 export async function loadGitignore(rootPath: string): Promise<string[]> {
   try {
     const gitignorePath = `${rootPath}/.gitignore`;
+    const { invoke } = await import("@tauri-apps/api/core");
     const content = await invoke<string>("read_file", { path: gitignorePath });
     return parseGitignore(content);
   } catch {
     return [];
   }
+}
+
+export function useGitignore(rootPath: string | null) {
+  const gitignorePath = rootPath ? `${rootPath}/.gitignore` : null;
+  const { data: content } = useReadFile(gitignorePath);
+
+  if (!content) {
+    return [];
+  }
+
+  return parseGitignore(content);
 }

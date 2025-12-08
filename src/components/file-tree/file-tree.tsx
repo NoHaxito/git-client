@@ -1,6 +1,7 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { SidebarMenu } from "@/components/ui/sidebar";
+import { useGitStatus, useListDirectory } from "@/hooks/tauri-queries";
 import { FileTreeItem } from "./file-tree-item";
 import { checkIfIgnored, loadGitignore } from "./gitignore-utils";
 import type { FileTreeNode, GitStatus } from "./types";
@@ -10,18 +11,17 @@ async function loadTreeRecursively(
   node: FileTreeNode,
   rootPath: string,
   gitStatus: Record<string, string>,
-  gitignorePatterns: string[]
+  gitignorePatterns: string[],
+  listDirectoryFn: (
+    path: string
+  ) => Promise<Array<{ name: string; path: string; is_dir: boolean }>>
 ): Promise<FileTreeNode> {
   if (!node.is_dir) {
     return node;
   }
 
   try {
-    const entries = await invoke<
-      Array<{ name: string; path: string; is_dir: boolean }>
-    >("list_directory", {
-      path: node.path,
-    });
+    const entries = await listDirectoryFn(node.path);
 
     const childrenPromises = entries.map(async (entry) => {
       const entryRelativePath = normalizePath(entry.path, rootPath);
@@ -41,7 +41,8 @@ async function loadTreeRecursively(
           childNode,
           rootPath,
           gitStatus,
-          gitignorePatterns
+          gitignorePatterns,
+          listDirectoryFn
         );
       }
 
@@ -103,77 +104,86 @@ type FileTreeProps = {
 };
 
 export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
+  const queryClient = useQueryClient();
   const [rootNode, setRootNode] = useState<FileTreeNode | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [gitStatus, setGitStatus] = useState<Record<string, string>>({});
   const [gitignorePatterns, setGitignorePatterns] = useState<string[]>([]);
 
+  const { data: entries, isLoading: isLoadingEntries } =
+    useListDirectory(rootPath);
+  const { data: gitStatus = {}, isLoading: isLoadingStatus } =
+    useGitStatus(rootPath);
+
+  const isLoading = isLoadingEntries || isLoadingStatus;
+
   useEffect(() => {
-    const loadRoot = async () => {
-      setIsLoading(true);
-      try {
-        const [entries, status, patterns] = await Promise.all([
-          invoke<Array<{ name: string; path: string; is_dir: boolean }>>(
-            "list_directory",
-            {
-              path: rootPath,
-            }
-          ),
-          invoke<Record<string, string>>("get_git_status", {
-            repoPath: rootPath,
-          }).catch(() => ({}) as Record<string, string>),
-          loadGitignore(rootPath),
-        ]);
+    const loadPatterns = async () => {
+      const patterns = await loadGitignore(rootPath);
+      setGitignorePatterns(patterns);
+    };
+    loadPatterns();
+  }, [rootPath]);
 
-        setGitStatus(status);
-        setGitignorePatterns(patterns);
+  useEffect(() => {
+    if (!entries || isLoading) {
+      return;
+    }
 
-        const treeNodes: FileTreeNode[] = entries.map((entry) => {
-          const entryRelativePath = normalizePath(entry.path, rootPath);
-          const entryStatus = status[entryRelativePath] as
-            | GitStatus
-            | undefined;
-          const isIgnored = checkIfIgnored(entry.path, rootPath, patterns);
+    const buildTree = async () => {
+      const treeNodes: FileTreeNode[] = entries.map((entry) => {
+        const entryRelativePath = normalizePath(entry.path, rootPath);
+        const entryStatus = gitStatus[entryRelativePath] as
+          | GitStatus
+          | undefined;
+        const isIgnored = checkIfIgnored(entry.path, rootPath, gitignorePatterns);
 
-          return {
-            ...entry,
-            expanded: false,
-            children: [],
-            gitStatus: entryStatus || null,
-            isIgnored,
-          };
-        });
-
-        const root: FileTreeNode = {
-          name: rootPath.split(PATH_SEPARATOR_REGEX).at(-1) || rootPath,
-          path: rootPath,
-          is_dir: true,
-          expanded: true,
-          children: treeNodes,
-          gitStatus: null,
-          isIgnored: false,
+        return {
+          ...entry,
+          expanded: false,
+          children: [],
+          gitStatus: entryStatus || null,
+          isIgnored,
         };
+      });
 
-        if (searchQuery.trim()) {
-          const fullyLoadedRoot = await loadTreeRecursively(
-            root,
-            rootPath,
-            status,
-            patterns
-          );
-          setRootNode(fullyLoadedRoot);
-        } else {
-          setRootNode(root);
-        }
-      } catch (error) {
-        console.error("Error loading root directory:", error);
-      } finally {
-        setIsLoading(false);
+      const root: FileTreeNode = {
+        name: rootPath.split(PATH_SEPARATOR_REGEX).at(-1) || rootPath,
+        path: rootPath,
+        is_dir: true,
+        expanded: true,
+        children: treeNodes,
+        gitStatus: null,
+        isIgnored: false,
+      };
+
+      if (searchQuery.trim()) {
+        const listDirectoryFn = async (path: string) => {
+          const data = await queryClient.fetchQuery({
+            queryKey: ["list-directory", path],
+            queryFn: async () => {
+              const { invoke } = await import("@tauri-apps/api/core");
+              return invoke<Array<{ name: string; path: string; is_dir: boolean }>>(
+                "list_directory",
+                { path }
+              );
+            },
+          });
+          return data;
+        };
+        const fullyLoadedRoot = await loadTreeRecursively(
+          root,
+          rootPath,
+          gitStatus,
+          gitignorePatterns,
+          listDirectoryFn
+        );
+        setRootNode(fullyLoadedRoot);
+      } else {
+        setRootNode(root);
       }
     };
 
-    loadRoot();
-  }, [rootPath, searchQuery]);
+    buildTree();
+  }, [entries, gitStatus, gitignorePatterns, rootPath, searchQuery, isLoading, queryClient]);
 
   if (isLoading) {
     return (

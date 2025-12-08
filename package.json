@@ -29,6 +29,7 @@
     "@lezer/highlight": "^1.2.3",
     "@react-symbols/icons": "^1.2.11",
     "@tailwindcss/vite": "^4.1.17",
+    "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-virtual": "^3.13.12",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "~2.4.2",

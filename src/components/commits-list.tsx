@@ -1,6 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { GitCommitIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogPopup,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCommitDetails, useGitCommits } from "@/hooks/tauri-queries";
 
 type Commit = {
   hash: string;
@@ -51,28 +51,12 @@ function CommitDetailsDialog({
   commit: Commit;
   repoPath: string;
 }) {
-  const [details, setDetails] = useState<CommitDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadDetails = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const commitDetails = await invoke<CommitDetails>("get_commit_details", {
-        repoPath,
-        commitHash: commit.hash,
-      });
-      setDetails(commitDetails);
-    } catch (err) {
-      console.error("Error loading commit details:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to load commit details"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    data: details,
+    isLoading,
+    error,
+  } = useCommitDetails(isOpen ? repoPath : null, isOpen ? commit.hash : null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,8 +73,11 @@ function CommitDetailsDialog({
     }
   };
 
+  const errorMessage =
+    error instanceof Error ? error.message : "Failed to load commit details";
+
   return (
-    <Dialog onOpenChange={(open) => open && loadDetails()}>
+    <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger
         render={
           <button className="w-full cursor-pointer text-left" type="button">
@@ -128,7 +115,7 @@ function CommitDetailsDialog({
               </div>
             )}
             {error && (
-              <div className="text-muted-foreground text-sm">{error}</div>
+              <div className="text-muted-foreground text-sm">{errorMessage}</div>
             )}
             {details && !isLoading && (
               <div className="space-y-4">
@@ -197,31 +184,11 @@ function CommitDetailsDialog({
 }
 
 export function CommitsList({ repoPath }: { repoPath: string }) {
-  const [commits, setCommits] = useState<Commit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadCommits = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const commitsData = await invoke<Commit[]>("get_git_commits", {
-          repoPath,
-        });
-        setCommits(commitsData);
-      } catch (err) {
-        console.error("Error loading commits:", err);
-        setError(err instanceof Error ? err.message : "Failed to load commits");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (repoPath) {
-      loadCommits();
-    }
-  }, [repoPath]);
+  const {
+    data: commits = [],
+    isLoading,
+    error,
+  } = useGitCommits(repoPath || null);
 
   if (isLoading) {
     return (
@@ -234,9 +201,11 @@ export function CommitsList({ repoPath }: { repoPath: string }) {
   }
 
   if (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to load commits";
     return (
       <div className="flex items-center justify-center p-4 text-muted-foreground text-sm">
-        {error}
+        {errorMessage}
       </div>
     );
   }

@@ -1,6 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
 import { XIcon } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { DiffViewer } from "@/components/diff-viewer";
 import {
@@ -9,48 +7,32 @@ import {
   ContextMenuPopup,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useGitDiff, useReadFile } from "@/hooks/tauri-queries";
 import { useRepoStore } from "@/stores/repo";
 
 export default function ProjectFilesFilepathDiff() {
   const params = useParams();
   const splat = params["*"];
   const currentRepo = useRepoStore((state) => state.currentRepo);
-  const [fileContent, setFileContent] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const decodedPath = splat ? decodeURIComponent(splat) : null;
 
-  useEffect(() => {
-    if (!(splat && currentRepo)) {
-      setIsLoading(false);
-      return;
-    }
+  const {
+    data: diffContent,
+    isLoading: isLoadingDiff,
+    error: diffError,
+  } = useGitDiff(currentRepo, decodedPath);
 
-    // Extract file path from URL: /project/files/diff/<path> -> <path>
-    // The splat should be the file path directly
-    const decodedPath = decodeURIComponent(splat);
-    setIsLoading(true);
+  const { data: fileContent, isLoading: isLoadingFile } = useReadFile(
+    diffError && decodedPath ? decodedPath : null
+  );
 
-    invoke<string>("get_git_diff", {
-      repoPath: currentRepo,
-      filePath: decodedPath,
-    })
-      .then((diff) => {
-        setFileContent(diff);
-      })
-      .catch((error) => {
-        console.error("Error reading git diff:", error);
-        invoke<string>("read_file", { path: decodedPath })
-          .then((content) => {
-            setFileContent(content);
-          })
-          .catch(() => {
-            setFileContent(null);
-          });
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [splat, currentRepo]);
+  const isLoading = isLoadingDiff || (diffError && isLoadingFile);
+  const content = diffContent || fileContent || null;
+
+  const handleCloseFile = () => {
+    navigate("/project/files");
+  };
 
   if (isLoading) {
     return (
@@ -68,27 +50,20 @@ export default function ProjectFilesFilepathDiff() {
     );
   }
 
-  const decodedPath = decodeURIComponent(splat);
-
-  if (!fileContent) {
+  if (!(decodedPath && content)) {
     return (
       <div className="flex h-full flex-1 items-center justify-center">
-        <div className="text-muted-foreground text-sm">
-          No diff available for this file
-        </div>
+        <div className="text-muted-foreground text-sm">No diff available</div>
       </div>
     );
   }
-  const handleCloseFile = () => {
-    navigate("/project/files");
-  };
 
   return (
     <ContextMenu>
       <ContextMenuTrigger
         render={
           <div className="flex flex-1">
-            <DiffViewer diffContent={fileContent} filePath={decodedPath} />
+            <DiffViewer diffContent={content} filePath={decodedPath} />
           </div>
         }
       />

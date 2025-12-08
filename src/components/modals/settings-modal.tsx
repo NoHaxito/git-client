@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
 import {
   Code2Icon,
   FolderIcon,
@@ -6,7 +5,6 @@ import {
   MousePointer,
   Settings as SettingsIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import useMeasure from "react-use-measure";
 import { AppearanceSettings } from "@/components/modals/appearance-settings";
 import { WorkspaceSettings } from "@/components/modals/workspace-settings";
@@ -22,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { useGitVersion, useSystemInfo } from "@/hooks/tauri-queries";
 
 const settingsCategories = [
   {
@@ -58,29 +57,9 @@ const APP_NAME = "Gitty Client";
 const APP_VERSION = "0.1.0";
 
 function AboutSection() {
-  const [osInfo, setOsInfo] = useState<[string, string] | null>(null);
-  const [gitVersion, setGitVersion] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadInfo = async () => {
-      try {
-        const [osName, osVersion] =
-          await invoke<[string, string]>("get_system_info");
-        setOsInfo([osName, osVersion]);
-      } catch (error) {
-        console.error("Error loading OS info:", error);
-      }
-
-      try {
-        const gitVer = await invoke<string>("get_git_version");
-        setGitVersion(gitVer.split("git version")[1]);
-      } catch (error) {
-        console.error("Error loading git version:", error);
-      }
-    };
-
-    loadInfo();
-  }, []);
+  const { data: osInfo } = useSystemInfo();
+  const { data: gitVersionRaw } = useGitVersion();
+  const gitVersion = gitVersionRaw?.split("git version")[1] || null;
 
   return (
     <div className="flex items-center gap-3 px-2 py-3">

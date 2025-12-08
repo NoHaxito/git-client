@@ -1,8 +1,10 @@
+/** biome-ignore-all lint/complexity/noUselessFragments: Fragment is used to group elements */
+
 import { FolderGit2Icon } from "lucide-react";
+import { WindowControls } from "../window-controls";
 import { BranchSelector } from "./branch-selector";
 import { NavigationButtons } from "./navigation-buttons";
 import { NotificationsPopover } from "./notifications-popover";
-import { WindowControls } from "../window-controls";
 
 export function StatusBar() {
   return (
@@ -19,6 +21,7 @@ export function StatusBar() {
           <BranchSelector />
         </div>
         <div className="flex items-center gap-2">
+          <div data-diff-details />
           <NotificationsPopover />
           <WindowControls />
         </div>
@@ -26,4 +29,3 @@ export function StatusBar() {
     </div>
   );
 }
-

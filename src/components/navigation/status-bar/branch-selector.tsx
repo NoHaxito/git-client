@@ -1,6 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { ChevronsUpDownIcon, GitBranchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Combobox,
@@ -14,54 +13,43 @@ import {
 } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRepoStore } from "@/stores/repo";
+import {
+  useCheckoutGitBranch,
+  useCurrentGitBranch,
+  useGitBranches,
+} from "@/hooks/tauri-queries";
 import type { Branch } from "./types";
 
 export function BranchSelector() {
   const currentRepo = useRepoStore((state) => state.currentRepo);
   const setBranch = useRepoStore((state) => state.setBranch);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [currentBranch, setCurrentBranch] = useState<Branch | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: branchList = [], isLoading: isLoadingBranches } =
+    useGitBranches(currentRepo);
+  const { data: currentBranchName, isLoading: isLoadingCurrent } =
+    useCurrentGitBranch(currentRepo);
+  const checkoutMutation = useCheckoutGitBranch();
+
+  const branches = useMemo<Branch[]>(
+    () =>
+      branchList.map((branch) => ({
+        label: branch,
+        value: branch,
+      })),
+    [branchList]
+  );
+
+  const currentBranch = useMemo<Branch | null>(
+    () => branches.find((b) => b.value === currentBranchName) || null,
+    [branches, currentBranchName]
+  );
 
   useEffect(() => {
-    if (!currentRepo) {
-      setBranches([]);
-      setCurrentBranch(null);
+    if (currentBranch) {
+      setBranch(currentBranch.value);
+    } else {
       setBranch(null);
-      return;
     }
-
-    const loadBranches = async () => {
-      setIsLoading(true);
-      try {
-        const [branchList, currentBranchName] = await Promise.all([
-          invoke<string[]>("get_git_branches", { repoPath: currentRepo }),
-          invoke<string>("get_current_git_branch", { repoPath: currentRepo }),
-        ]);
-
-        const branchItems: Branch[] = branchList.map((branch) => ({
-          label: branch,
-          value: branch,
-        }));
-
-        setBranches(branchItems);
-
-        const current = branchItems.find((b) => b.value === currentBranchName);
-        if (current) {
-          setCurrentBranch(current);
-          setBranch(current.value);
-        }
-      } catch (error) {
-        console.error("Error loading branches:", error);
-        setBranches([]);
-        setCurrentBranch(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadBranches();
-  }, [currentRepo, setBranch]);
+  }, [currentBranch, setBranch]);
 
   const handleBranchChange = async (branch: Branch | null) => {
     if (!(branch && currentRepo)) {
@@ -72,20 +60,22 @@ export function BranchSelector() {
     }
 
     try {
-      await invoke("checkout_git_branch", {
+      await checkoutMutation.mutateAsync({
         repoPath: currentRepo,
         branchName: branch.value,
       });
-      setCurrentBranch(branch);
       setBranch(branch.value);
     } catch (error) {
       console.error("Error checking out branch:", error);
     }
   };
 
-  if (!currentRepo || branches.length === 0) {
+  const isLoading = isLoadingBranches || isLoadingCurrent;
+
+  if (!currentRepo) {
     return null;
   }
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-1">

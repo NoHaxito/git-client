@@ -1,8 +1,8 @@
-import { invoke } from "@tauri-apps/api/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-dialog";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { FolderOpen, GitBranch } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toastManager } from "@/components/ui/toast";
+import { useListGitRepos } from "@/hooks/tauri-queries";
 import { cn } from "@/lib/utils";
 import { useRepoStore } from "@/stores/repo";
 
@@ -26,26 +27,14 @@ const PATH_SEPARATOR_REGEX = /[/\\]/;
 
 export function OpenProjectModal() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [openDialog, setOpenDialog] = useState(false);
-  const [repos, setRepos] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [clonePath, setClonePath] = useState<string | null>(null);
   const setRepo = useRepoStore((state) => state.setRepo);
 
-  const loadRepos = useCallback(async (path: string) => {
-    setIsLoading(true);
-    try {
-      const reposList = await invoke<string[]>("list_git_repos", {
-        clonePath: path,
-      });
-      setRepos(reposList);
-    } catch (error) {
-      console.error("Error loading repos:", error);
-      setRepos([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: repos = [], isLoading } = useListGitRepos(
+    openDialog && clonePath ? clonePath : null
+  );
 
   useEffect(() => {
     const loadClonePath = async () => {
@@ -53,20 +42,13 @@ export function OpenProjectModal() {
         const savedPath = await store.get<string>(CLONE_PATH_KEY);
         if (savedPath) {
           setClonePath(savedPath);
-          await loadRepos(savedPath);
         }
       } catch (error) {
         console.error("Error loading clone path:", error);
       }
     };
     loadClonePath();
-  }, [loadRepos]);
-
-  useEffect(() => {
-    if (openDialog && clonePath) {
-      loadRepos(clonePath);
-    }
-  }, [openDialog, clonePath, loadRepos]);
+  }, []);
 
   const handleSelectFolder = async () => {
     try {
@@ -84,7 +66,14 @@ export function OpenProjectModal() {
 
   const handleOpenProject = async (path: string) => {
     try {
-      const isGitRepo = await invoke<boolean>("is_git_repo", { path });
+      const isGitRepo = await queryClient.fetchQuery({
+        queryKey: ["is-git-repo", path],
+        queryFn: async () => {
+          const { invoke } = await import("@tauri-apps/api/core");
+          return invoke<boolean>("is_git_repo", { path });
+        },
+      });
+
       if (!isGitRepo) {
         toastManager.add({
           type: "error",
