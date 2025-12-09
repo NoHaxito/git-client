@@ -2,6 +2,7 @@
 
 import { FileTextIcon, GitCommitIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
+import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { CommitsList } from "@/components/commits-list";
 import { FileTree } from "@/components/file-tree/file-tree";
@@ -48,6 +49,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isFilesRoute = location.pathname.startsWith("/project/files");
   const isCommitsRoute = location.pathname === "/project/commits";
+
+  const parentRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -141,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           </div>
         </SidebarHeader>
-        <SidebarContent className="overflow-x-hidden">
+        <SidebarContent className="overflow-x-hidden" ref={parentRef}>
           <SidebarGroup>
             <SidebarGroupContent>
               {!currentRepo && (
@@ -152,6 +155,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {currentRepo && isCommitsRoute && (
                 <CommitsList
                   key={`${currentRepo}-${currentBranch || "default"}`}
+                  parentRef={parentRef}
                   repoPath={currentRepo}
                 />
               )}

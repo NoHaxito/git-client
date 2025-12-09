@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useGitDiff, useReadFile } from "@/hooks/tauri-queries";
 import { useRepoStore } from "@/stores/repo";
+import { useTabsStore } from "@/stores/tabs";
 
 export default function ProjectFilesFilepathDiff() {
   const params = useParams();
@@ -16,6 +17,9 @@ export default function ProjectFilesFilepathDiff() {
   const currentRepo = useRepoStore((state) => state.currentRepo);
   const navigate = useNavigate();
   const decodedPath = splat ? decodeURIComponent(splat) : null;
+  const removeTab = useTabsStore((state) => state.removeTab);
+  const tabs = useTabsStore((state) => state.tabs);
+  const activeTabId = useTabsStore((state) => state.activeTabId);
 
   const {
     data: diffContent,
@@ -31,7 +35,34 @@ export default function ProjectFilesFilepathDiff() {
   const content = diffContent || fileContent || null;
 
   const handleCloseFile = () => {
-    navigate("/project/files");
+    if (!decodedPath) {
+      navigate("/project/files");
+      return;
+    }
+    const tabId = `diff:${decodedPath}`;
+    const currentTabs = tabs;
+    const willBeRemoved = activeTabId === tabId;
+    removeTab(tabId);
+
+    if (willBeRemoved && currentTabs.length > 1) {
+      const currentIndex = currentTabs.findIndex((t) => t.id === tabId);
+      const nextTab =
+        currentIndex > 0
+          ? currentTabs[currentIndex - 1]
+          : currentTabs[currentIndex + 1];
+      if (nextTab) {
+        const encodedPath = encodeURIComponent(nextTab.path);
+        if (nextTab.type === "diff") {
+          navigate(`/project/files/diff/${encodedPath}`);
+        } else {
+          navigate(`/project/files/view/${encodedPath}`);
+        }
+      } else {
+        navigate("/project/files");
+      }
+    } else if (willBeRemoved) {
+      navigate("/project/files");
+    }
   };
 
   if (isLoading) {

@@ -3,6 +3,7 @@ import {
   ArrowRightIcon,
   CopyIcon,
   DiffIcon,
+  ExternalLinkIcon,
   FolderOpenIcon,
   GlobeIcon,
   Trash2Icon,
@@ -66,10 +67,10 @@ export function ItemContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger render={children} />
-      <ContextMenuPopup className="outline-none">
+      <ContextMenuPopup>
         {!is_dir && (
           <ContextMenuItem render={<Link to={`/project/files/view/${path}`} />}>
-            <ArrowRightIcon className="size-4" />
+            <ArrowRightIcon />
             Open
           </ContextMenuItem>
         )}
@@ -82,8 +83,9 @@ export function ItemContextMenu({
               />
             }
           >
-            <GlobeIcon className="size-4" />
+            <GlobeIcon />
             Open in Browser
+            <ExternalLinkIcon className="ms-auto size-4" />
           </ContextMenuItem>
         )}
         {!is_dir && (
@@ -98,28 +100,28 @@ export function ItemContextMenu({
               />
             }
           >
-            <DiffIcon className="size-4" />
+            <DiffIcon />
             Open Diff
           </ContextMenuItem>
         )}
         <ContextMenuItem onClick={handleReveal}>
-          <FolderOpenIcon className="size-4 group-data-highlighted:fill-current" />
+          <FolderOpenIcon className="group-data-highlighted:fill-current" />
           Reveal in File Explorer
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuGroup>
           <ContextMenuItem onClick={handleCopyPath}>
-            <CopyIcon className="size-4" />
+            <CopyIcon />
             Copy Path
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyRelativePath}>
-            <CopyIcon className="size-4" />
+            <CopyIcon />
             Copy Relative Path
           </ContextMenuItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
         <ContextMenuItem variant="destructive">
-          <Trash2Icon className="size-4" />
+          <Trash2Icon />
           Delete File
         </ContextMenuItem>
       </ContextMenuPopup>

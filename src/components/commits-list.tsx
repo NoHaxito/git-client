@@ -1,3 +1,4 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { GitCommitIcon } from "lucide-react";
 import { useState } from "react";
 import {
@@ -7,6 +8,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCommitDetails, useGitCommits } from "@/hooks/tauri-queries";
 
@@ -16,23 +22,6 @@ type Commit = {
   email: string;
   date: string;
   message: string;
-};
-
-type ChangedFile = {
-  status: string;
-  path: string;
-  additions?: number;
-  deletions?: number;
-};
-
-type CommitDetails = {
-  hash: string;
-  author: string;
-  email: string;
-  date: string;
-  message: string;
-  files: ChangedFile[];
-  stats: string;
 };
 
 function formatDate(dateStr: string): string {
@@ -80,28 +69,28 @@ function CommitDetailsDialog({
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger
         render={
-          <button className="w-full cursor-pointer text-left" type="button">
-            <div className="px-2 py-1.5 hover:bg-accent/50">
+          <SidebarMenuButton
+            className="w-full cursor-pointer"
+            size="lg"
+            type="button"
+          >
+            <GitCommitIcon className="size-4 shrink-0" />
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <GitCommitIcon className="size-3 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 font-mono text-muted-foreground text-xs">
-                      {commit.hash.slice(0, 7)}
-                    </span>
-                    <span className="wrap-break-word line-clamp-1 whitespace-break-spaces font-medium text-xs">
-                      {commit.message}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                    <span className="truncate">{commit.author}</span>
-                    <span>•</span>
-                    <span className="shrink-0">{formatDate(commit.date)}</span>
-                  </div>
-                </div>
+                <span className="shrink-0 font-mono text-muted-foreground text-xs">
+                  {commit.hash.slice(0, 7)}
+                </span>
+                <span className="line-clamp-1 max-w-[200px] text-xs">
+                  {commit.message}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                <span className="truncate">{commit.author}</span>
+                <span>•</span>
+                <span className="shrink-0">{formatDate(commit.date)}</span>
               </div>
             </div>
-          </button>
+          </SidebarMenuButton>
         }
       />
       <DialogPopup className="max-w-2xl">
@@ -115,7 +104,9 @@ function CommitDetailsDialog({
               </div>
             )}
             {error && (
-              <div className="text-muted-foreground text-sm">{errorMessage}</div>
+              <div className="text-muted-foreground text-sm">
+                {errorMessage}
+              </div>
             )}
             {details && !isLoading && (
               <div className="space-y-4">
@@ -183,12 +174,25 @@ function CommitDetailsDialog({
   );
 }
 
-export function CommitsList({ repoPath }: { repoPath: string }) {
+export function CommitsList({
+  parentRef,
+  repoPath,
+}: {
+  parentRef: React.RefObject<HTMLDivElement>;
+  repoPath: string;
+}) {
   const {
     data: commits = [],
     isLoading,
     error,
   } = useGitCommits(repoPath || null);
+
+  const virtualizer = useVirtualizer({
+    count: commits.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 48,
+    overscan: 5,
+  });
 
   if (isLoading) {
     return (
@@ -218,15 +222,37 @@ export function CommitsList({ repoPath }: { repoPath: string }) {
     );
   }
 
+  const items = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+
   return (
-    <div className="select-none [&>*:not(:last-child)]:border-b">
-      {commits.map((commit) => (
-        <CommitDetailsDialog
-          commit={commit}
-          key={commit.hash}
-          repoPath={repoPath}
-        />
-      ))}
+    <div
+      style={{
+        height: `${totalSize}px`,
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      <SidebarMenu className="absolute inset-x-0 gap-0">
+        {items.map((virtualItem) => {
+          const commit = commits[virtualItem.index];
+          return (
+            <SidebarMenuItem
+              key={commit.hash}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: `${virtualItem.size}px`,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <CommitDetailsDialog commit={commit} repoPath={repoPath} />
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
     </div>
   );
 }

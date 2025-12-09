@@ -406,8 +406,7 @@ pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
     let output = Command::new("git")
         .arg("--no-pager")
         .arg("log")
-        .arg("--pretty=format:{%n  \"hash\": \"%H\",%n  \"author\": \"%an\",%n  \"email\": \"%ae\",%n  \"date\": \"%ad\",%n  \"message\": \"%s\"%n},")
-        .arg("--date=iso")
+        .arg("--pretty=format:%H%x1E%an%x1E%ae%x1E%ai%x1E%s%x1F")
         .current_dir(repo)
         .output()
         .await
@@ -424,17 +423,37 @@ pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
         return Ok(Vec::new());
     }
 
-    let trimmed = stdout.trim_end_matches(',').trim();
-    let json_str = format!("[{}]", trimmed);
+    let mut commits = Vec::new();
+    let record_separator = '\u{001E}';
+    let unit_separator = '\u{001F}';
 
-    match serde_json::from_str::<Vec<Commit>>(&json_str) {
-        Ok(parsed_commits) => Ok(parsed_commits),
-        Err(e) => {
-            eprintln!("Failed to parse git log JSON: {}", e);
-            eprintln!("Output: {}", json_str);
-            Err(format!("Failed to parse git log output: {}", e))
+    for record in stdout.split(unit_separator) {
+        if record.trim().is_empty() {
+            continue;
+        }
+
+        let parts: Vec<&str> = record.split(record_separator).collect();
+        if parts.len() >= 5 {
+            let hash = parts[0].trim().to_string();
+            let author = parts[1].trim().to_string();
+            let email = parts[2].trim().to_string();
+            let date_str = parts[3].trim().to_string();
+            let message = parts[4..]
+                .join(&record_separator.to_string())
+                .trim()
+                .to_string();
+
+            commits.push(Commit {
+                hash,
+                author,
+                email,
+                date: date_str,
+                message,
+            });
         }
     }
+
+    Ok(commits)
 }
 
 #[derive(serde::Serialize)]

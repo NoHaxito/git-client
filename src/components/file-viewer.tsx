@@ -2,6 +2,7 @@ import { XIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { CodeEditor } from "@/components/code-editor";
 import { useFileStore } from "@/stores/file";
+import { useTabsStore } from "@/stores/tabs";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -23,6 +24,9 @@ type FileViewerProps = {
 
 export function FileViewer({ filePath, fileContent }: FileViewerProps) {
   const navigate = useNavigate();
+  const removeTab = useTabsStore((state) => state.removeTab);
+  const tabs = useTabsStore((state) => state.tabs);
+  const activeTabId = useTabsStore((state) => state.activeTabId);
 
   if (!filePath) {
     return (
@@ -44,7 +48,30 @@ export function FileViewer({ filePath, fileContent }: FileViewerProps) {
   }
 
   const handleCloseFile = () => {
-    navigate("/project/files");
+    const tabId = `file:${filePath}`;
+    const currentTabs = tabs;
+    const willBeRemoved = activeTabId === tabId;
+    removeTab(tabId);
+
+    if (willBeRemoved && currentTabs.length > 1) {
+      const currentIndex = currentTabs.findIndex((t) => t.id === tabId);
+      const nextTab =
+        currentIndex > 0
+          ? currentTabs[currentIndex - 1]
+          : currentTabs[currentIndex + 1];
+      if (nextTab) {
+        const encodedPath = encodeURIComponent(nextTab.path);
+        if (nextTab.type === "diff") {
+          navigate(`/project/files/diff/${encodedPath}`);
+        } else {
+          navigate(`/project/files/view/${encodedPath}`);
+        }
+      } else {
+        navigate("/project/files");
+      }
+    } else if (willBeRemoved) {
+      navigate("/project/files");
+    }
   };
 
   return (

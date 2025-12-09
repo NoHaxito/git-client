@@ -31,7 +31,7 @@ function ContextMenuPopup({
       >
         <ContextMenuPrimitive.Popup
           className={cn(
-            "dark:-outline-offset-1 origin-(--transform-origin) rounded-md border bg-popover py-1 text-accent-foreground shadow-lg outline transition-[opacity,scale] data-ending-style:scale-98 data-starting-style:scale-98 data-ending-style:opacity-0 data-starting-style:opacity-0 dark:shadow-none",
+            "w-56 origin-(--transform-origin) rounded-md border bg-popover py-1 text-accent-foreground shadow-lg transition-[opacity,scale] data-ending-style:scale-98 data-starting-style:scale-98 data-ending-style:opacity-0 data-starting-style:opacity-0",
             className
           )}
           data-slot="context-menu-popup"
@@ -52,7 +52,7 @@ function ContextMenuItem({
   return (
     <ContextMenuPrimitive.Item
       className={cn(
-        "group flex cursor-default select-none gap-2 py-2 pr-8 pl-4 text-sm leading-4 outline-none data-highlighted:relative data-highlighted:z-0 data-highlighted:text-neutral-50 data-highlighted:before:absolute data-highlighted:before:inset-x-1 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] data-highlighted:before:rounded-sm data-highlighted:before:bg-accent [&>svg]:text-muted-foreground",
+        "group flex cursor-default select-none items-center gap-2 px-2.5 py-1 text-base outline-none data-highlighted:relative data-highlighted:z-0 data-highlighted:text-neutral-50 data-highlighted:before:absolute data-highlighted:before:inset-x-1 data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] data-highlighted:before:rounded-sm data-highlighted:before:bg-accent sm:text-xs [&>svg]:size-3.5 [&>svg]:text-muted-foreground",
         variant === "destructive" &&
           "text-destructive-foreground data-highlighted:text-destructive-foreground data-highlighted:before:bg-red-500/10 [&>svg]:text-destructive-foreground",
         className
