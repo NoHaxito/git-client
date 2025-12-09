@@ -4,6 +4,7 @@ import {
   PreviewCardPopup,
   PreviewCardTrigger,
 } from "@/components/ui/preview-card";
+import { useSettings } from "@/hooks/use-settings";
 import type { BlameLine } from "../types";
 import { timeAgo } from "../utils";
 
@@ -12,6 +13,10 @@ type BlameInfoProps = {
 };
 
 export function BlameInfo({ blameLine }: BlameInfoProps) {
+  const { settings } = useSettings();
+
+  const showExtendedDetails = settings.editor.gitBlame.extendedDetails;
+
   if (!blameLine) {
     return null;
   }
@@ -30,7 +35,12 @@ export function BlameInfo({ blameLine }: BlameInfoProps) {
           {blameLine.commit_message.slice(0, 20)}...
         </span>
       </PreviewCardTrigger>
-      <PreviewCardPopup align="center" className="p-2" side="right">
+      <PreviewCardPopup
+        align="center"
+        className="p-2"
+        hidden={!showExtendedDetails}
+        side="right"
+      >
         <div>
           <div className="font-mono text-xs">
             {blameLine.commit_hash.slice(0, 7)}
