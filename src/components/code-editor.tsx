@@ -6,6 +6,7 @@ import { LineNumbers } from "./code-editor/components/line-numbers";
 import { useGitBlame } from "./code-editor/hooks/use-git-blame";
 import { useSyntaxHighlighting } from "./code-editor/hooks/use-syntax-highlighting";
 import type { CodeEditorProps } from "./code-editor/types";
+import { VirtualCursorWrapper } from "./virtual-cursor/virtual-cursor-wrapper";
 
 export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
   const { highlightedTokens } = useSyntaxHighlighting(value, language);
@@ -29,7 +30,17 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
   const hasBlameData = blameData.length > 0;
 
   return (
-    <div className="flex flex-1 font-mono text-sm">
+    <VirtualCursorWrapper
+      charWidth={8.4}
+      className="flex w-full flex-1 font-mono text-sm"
+      content={value}
+      cursorColor="#528bff"
+      cursorOffsetLeft={56}
+      cursorOffsetTop={4}
+      editable={false}
+      lineHeight={21}
+      showPositionIndicator={true}
+    >
       <LineNumbers lineCount={lineCount} />
       <div className="z-1 grid w-full min-w-0">
         <pre className="grid w-full min-w-0">
@@ -49,7 +60,7 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
           </code>
         </pre>
       </div>
-    </div>
+    </VirtualCursorWrapper>
   );
 }
 

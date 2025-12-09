@@ -61,7 +61,7 @@ export function CustomTabs() {
   }
 
   return (
-    <div className="flex items-center overflow-hidden overflow-x-auto border-b bg-background dark:bg-zinc-900">
+    <div className="sticky top-0 z-20 flex h-8 min-h-8 items-center overflow-hidden overflow-x-auto border-b bg-background dark:bg-zinc-900">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         const FileIcon = tab.type === "diff" ? DiffIcon : getFileIcon(tab.path);
@@ -69,8 +69,9 @@ export function CustomTabs() {
           <button
             className={cn(
               "group flex h-8 items-center gap-1.5 px-2 text-xs transition-colors",
-              "border-transparent border-b hover:bg-accent/50",
-              isActive && "border-b-primary bg-accent/20"
+              "border-transparent border-t hover:bg-accent/50",
+              isActive &&
+                "border-b-background bg-background dark:border-b-sidebar dark:bg-sidebar-accent/50"
             )}
             key={tab.id}
             onClick={() => handleTabClick(tab)}
