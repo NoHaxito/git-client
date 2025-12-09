@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import useMeasure from "react-use-measure";
 import { AppearanceSettings } from "@/components/modals/appearance-settings";
+import { EditorSettings } from "@/components/modals/editor-settings";
 import { WorkspaceSettings } from "@/components/modals/workspace-settings";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -89,6 +90,9 @@ export function SettingsModal() {
     }
     if (categoryId === "workspace") {
       return <WorkspaceSettings />;
+    }
+    if (categoryId === "editor") {
+      return <EditorSettings />;
     }
     return (
       <div className="space-y-4">

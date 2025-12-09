@@ -1,8 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-dialog";
-import { LazyStore } from "@tauri-apps/plugin-store";
 import { FolderOpen, GitBranch } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,37 +17,23 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toastManager } from "@/components/ui/toast";
 import { useListGitRepos } from "@/hooks/tauri-queries";
+import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
 import { useRepoStore } from "@/stores/repo";
 
-const CLONE_PATH_KEY = "workspace.clone_path";
-const store = new LazyStore(".settings.dat");
 const PATH_SEPARATOR_REGEX = /[/\\]/;
 
 export function OpenProjectModal() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [openDialog, setOpenDialog] = useState(false);
-  const [clonePath, setClonePath] = useState<string | null>(null);
+  const { settings } = useSettings();
+  const clonePath = settings.workspace.clonePath || null;
   const setRepo = useRepoStore((state) => state.setRepo);
 
   const { data: repos = [], isLoading } = useListGitRepos(
     openDialog && clonePath ? clonePath : null
   );
-
-  useEffect(() => {
-    const loadClonePath = async () => {
-      try {
-        const savedPath = await store.get<string>(CLONE_PATH_KEY);
-        if (savedPath) {
-          setClonePath(savedPath);
-        }
-      } catch (error) {
-        console.error("Error loading clone path:", error);
-      }
-    };
-    loadClonePath();
-  }, []);
 
   const handleSelectFolder = async () => {
     try {

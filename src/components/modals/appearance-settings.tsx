@@ -1,6 +1,4 @@
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: NOT NECCESSARY FOR THIS COMPONENT */
-import { LazyStore } from "@tauri-apps/plugin-store";
-import { useEffect, useState } from "react";
 import {
   Field,
   FieldContent,
@@ -17,11 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSettings } from "@/hooks/use-settings";
 import { type Theme, useTheme } from "../theme-provider";
 import { Label } from "../ui/label";
-
-const LANGUAGE_KEY = "appearance.language";
-const store = new LazyStore(".settings.dat");
 
 const languages = [
   { code: "en", label: "English", flag: "gb" },
@@ -40,31 +36,7 @@ function getLanguageByCode(code: string) {
 
 export function AppearanceSettings() {
   const { theme, setTheme } = useTheme();
-  const [language, setLanguage] = useState("en");
-
-  useEffect(() => {
-    const loadLanguage = async () => {
-      try {
-        const savedLanguage = await store.get<string>(LANGUAGE_KEY);
-        if (savedLanguage) {
-          setLanguage(savedLanguage);
-        }
-      } catch (error) {
-        console.error("Error loading language:", error);
-      }
-    };
-    loadLanguage();
-  }, []);
-
-  const handleLanguageChange = async (value: string) => {
-    setLanguage(value);
-    try {
-      await store.set(LANGUAGE_KEY, value);
-      await store.save();
-    } catch (error) {
-      console.error("Error saving language:", error);
-    }
-  };
+  const { settings, updateAppearanceLanguage } = useSettings();
 
   return (
     <FieldSet>
@@ -148,11 +120,16 @@ export function AppearanceSettings() {
               Choose your preferred language for the interface.
             </FieldDescription>
           </FieldContent>
-          <Select onValueChange={handleLanguageChange} value={language}>
+          <Select
+            onValueChange={updateAppearanceLanguage}
+            value={settings.appearance.language}
+          >
             <SelectTrigger>
               <SelectValue>
                 {(() => {
-                  const selectedLang = getLanguageByCode(language);
+                  const selectedLang = getLanguageByCode(
+                    settings.appearance.language
+                  );
                   return (
                     <div className="flex items-center gap-2">
                       <img

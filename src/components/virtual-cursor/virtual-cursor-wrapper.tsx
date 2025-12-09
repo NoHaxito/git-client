@@ -91,7 +91,7 @@ export const VirtualCursorWrapper = ({
       </div>
 
       {showPositionIndicator && (
-        <div className="fixed right-2 bottom-2 rounded bg-muted px-2 py-1 text-muted-foreground text-xs">
+        <div className="fixed right-8 bottom-8 rounded bg-muted px-2 py-1 text-muted-foreground text-xs">
           Ln {position.line + 1}, Col {position.column + 1}
         </div>
       )}

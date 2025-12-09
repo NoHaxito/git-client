@@ -1,5 +1,4 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { LazyStore } from "@tauri-apps/plugin-store";
 import { FolderOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,7 @@ import {
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDiskSpace, useFolderSize } from "@/hooks/tauri-queries";
-
-const CLONE_PATH_KEY = "workspace.clone_path";
-const store = new LazyStore(".settings.dat");
+import { useSettings } from "@/hooks/use-settings";
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
@@ -33,7 +30,10 @@ function formatBytes(bytes: number): string {
 }
 
 export function WorkspaceSettings() {
-  const [cloneDirectory, setCloneDirectory] = useState("");
+  const { settings, updateWorkspaceClonePath } = useSettings();
+  const [cloneDirectory, setCloneDirectory] = useState(
+    settings.workspace.clonePath
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: folderSize = 0, isLoading: isLoadingSize } = useFolderSize(
@@ -48,27 +48,8 @@ export function WorkspaceSettings() {
   const isLoading = isLoadingSize || isLoadingDisk;
 
   useEffect(() => {
-    const loadClonePath = async () => {
-      try {
-        const savedPath = await store.get<string>(CLONE_PATH_KEY);
-        if (savedPath) {
-          setCloneDirectory(savedPath);
-        }
-      } catch (error) {
-        console.error("Error loading clone path:", error);
-      }
-    };
-    loadClonePath();
-  }, []);
-
-  const saveClonePath = async (path: string) => {
-    try {
-      await store.set(CLONE_PATH_KEY, path);
-      await store.save();
-    } catch (error) {
-      console.error("Error saving clone path:", error);
-    }
-  };
+    setCloneDirectory(settings.workspace.clonePath);
+  }, [settings.workspace.clonePath]);
 
   const handleSelectDirectory = async () => {
     try {
@@ -78,7 +59,7 @@ export function WorkspaceSettings() {
       });
       if (selected && typeof selected === "string") {
         setCloneDirectory(selected);
-        await saveClonePath(selected);
+        await updateWorkspaceClonePath(selected);
       }
     } catch (error) {
       console.error("Error selecting directory:", error);
@@ -87,7 +68,7 @@ export function WorkspaceSettings() {
 
   const handleBlur = async () => {
     if (cloneDirectory) {
-      await saveClonePath(cloneDirectory);
+      await updateWorkspaceClonePath(cloneDirectory);
     }
   };
 

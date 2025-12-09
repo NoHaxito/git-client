@@ -132,7 +132,11 @@ export function useGitDiff(repoPath: string | null, filePath: string | null) {
   });
 }
 
-export function useGitBlame(repoPath: string | null, filePath: string | null) {
+export function useGitBlame(
+  repoPath: string | null,
+  filePath: string | null,
+  enabled: boolean = true
+) {
   return useQuery({
     queryKey: ["git-blame", repoPath, filePath],
     queryFn: () =>
@@ -140,7 +144,7 @@ export function useGitBlame(repoPath: string | null, filePath: string | null) {
         repoPath,
         filePath,
       }),
-    enabled: !!(repoPath && filePath),
+    enabled: !!(repoPath && filePath) && enabled,
   });
 }
 

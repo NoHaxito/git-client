@@ -23,11 +23,11 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
 
   const getBlameData = useCallback(
     (lineIndex: number) =>
-      blameData.find((blame) => blame.line_number === lineIndex + 1),
+      blameData?.find((blame) => blame.line_number === lineIndex + 1),
     [blameData]
   );
 
-  const hasBlameData = blameData.length > 0;
+  const hasBlameData = blameData && blameData.length > 0;
 
   return (
     <VirtualCursorWrapper
