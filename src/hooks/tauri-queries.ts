@@ -198,3 +198,11 @@ export function useGitVersion() {
     queryFn: () => invoke<string>("get_git_version"),
   });
 }
+
+export function useGitRemoteOrigin(repoPath: string | null) {
+  return useQuery({
+    queryKey: ["git-remote-origin", repoPath],
+    queryFn: () => invoke<string | null>("get_git_remote_origin", { repoPath }),
+    enabled: !!repoPath,
+  });
+}

@@ -24,7 +24,7 @@ export function FolderItem({
 }: FolderItemProps) {
   return (
     <>
-      <ItemContextMenu path={node.path} rootPath={rootPath}>
+      <ItemContextMenu is_dir={true} path={node.path} rootPath={rootPath}>
         <SidebarMenuButton
           className={cn(
             "h-6 gap-1.5 px-1.5 text-xs",

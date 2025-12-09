@@ -22,8 +22,8 @@ export function CodeLine({ line, lineIndex, blameLine }: CodeLineProps) {
   const hasTokens = line.length > 0;
 
   return (
-    <div className="" data-line={lineIndex + 1}>
-      <span className="relative">
+    <div data-line={lineIndex + 1}>
+      <span className="relative min-w-full">
         {hasTokens ? (
           <>
             {tokens}

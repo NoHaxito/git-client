@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/complexity/noUselessFragments: Fragment is used to group elements */
 
-import { FolderGit2Icon } from "lucide-react";
+import { FolderGit2Icon, SearchIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { WindowControls } from "../window-controls";
 import { BranchSelector } from "./branch-selector";
 import { NavigationButtons } from "./navigation-buttons";
@@ -22,6 +23,9 @@ export function StatusBar() {
         </div>
         <div className="flex items-center gap-2">
           <div data-diff-details />
+          <Button size="icon-sm" variant="ghost">
+            <SearchIcon className="size-3.5" />
+          </Button>
           <NotificationsPopover />
           <WindowControls />
         </div>

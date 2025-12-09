@@ -641,3 +641,37 @@ pub async fn get_git_diff(repo_path: String, file_path: String) -> Result<String
     let stdout = String::from_utf8_lossy(&output.stdout);
     Ok(stdout.to_string())
 }
+
+#[tauri::command]
+pub async fn get_git_remote_origin(repo_path: String) -> Result<Option<String>, String> {
+    let repo = Path::new(&repo_path);
+
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+
+    let output = Command::new("git")
+        .arg("remote")
+        .arg("get-url")
+        .arg("origin")
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git remote get-url origin: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if stderr.contains("No such remote 'origin'") {
+            return Ok(None);
+        }
+        return Err(format!("Git remote get-url origin failed: {}", stderr));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(Some(stdout.trim().to_string()))
+}

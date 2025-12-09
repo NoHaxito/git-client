@@ -4,6 +4,7 @@ import {
   CopyIcon,
   DiffIcon,
   FolderOpenIcon,
+  GlobeIcon,
   Trash2Icon,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -17,6 +18,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
+import { useRepoStore } from "@/stores/repo";
 import type { GitStatus } from "./types";
 import { normalizePath } from "./utils";
 
@@ -25,6 +27,7 @@ type ItemContextMenuProps = {
   path: string;
   rootPath: string;
   hasModifications?: GitStatus;
+  is_dir?: boolean;
 };
 
 export function ItemContextMenu({
@@ -32,7 +35,10 @@ export function ItemContextMenu({
   path,
   hasModifications,
   rootPath,
+  is_dir,
 }: ItemContextMenuProps) {
+  const remoteOrigin = useRepoStore((state) => state.remoteOrigin);
+  const currentBranch = useRepoStore((state) => state.currentBranch);
   const handleReveal = async () => {
     try {
       await revealItemInDir(path);
@@ -61,24 +67,41 @@ export function ItemContextMenu({
     <ContextMenu>
       <ContextMenuTrigger render={children} />
       <ContextMenuPopup className="outline-none">
-        <ContextMenuItem render={<Link to={`/project/files/view/${path}`} />}>
-          <ArrowRightIcon className="size-4" />
-          Open
-        </ContextMenuItem>
-        <ContextMenuItem
-          disabled={!hasModifications}
-          render={
-            <Link
-              className={cn(
-                hasModifications ? "" : "pointer-events-none opacity-50"
-              )}
-              to={`/project/files/diff/${encodeURIComponent(path)}`}
-            />
-          }
-        >
-          <DiffIcon className="size-4" />
-          Open Diff
-        </ContextMenuItem>
+        {!is_dir && (
+          <ContextMenuItem render={<Link to={`/project/files/view/${path}`} />}>
+            <ArrowRightIcon className="size-4" />
+            Open
+          </ContextMenuItem>
+        )}
+        {remoteOrigin && (
+          <ContextMenuItem
+            render={
+              <Link
+                target="_blank"
+                to={`${remoteOrigin}/blob/${currentBranch}/${normalizePath(path, rootPath)}`}
+              />
+            }
+          >
+            <GlobeIcon className="size-4" />
+            Open in Browser
+          </ContextMenuItem>
+        )}
+        {!is_dir && (
+          <ContextMenuItem
+            disabled={!hasModifications}
+            render={
+              <Link
+                className={cn(
+                  hasModifications ? "" : "pointer-events-none opacity-50"
+                )}
+                to={`/project/files/diff/${encodeURIComponent(path)}`}
+              />
+            }
+          >
+            <DiffIcon className="size-4" />
+            Open Diff
+          </ContextMenuItem>
+        )}
         <ContextMenuItem onClick={handleReveal}>
           <FolderOpenIcon className="size-4 group-data-highlighted:fill-current" />
           Reveal in File Explorer

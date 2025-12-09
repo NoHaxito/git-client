@@ -24,6 +24,7 @@ export function FileItem({
   return (
     <ItemContextMenu
       hasModifications={node.gitStatus}
+      is_dir={node.is_dir}
       path={node.path}
       rootPath={rootPath}
     >

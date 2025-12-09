@@ -56,7 +56,7 @@ export function WindowControls() {
   }, [appWindow]);
 
   return (
-    <div className="flex items-center [&>button]:rounded-none">
+    <div className="flex items-center [&>button]:rounded-none [&>button]:outline-none! [&>button]:ring-0! [&>button]:ring-offset-0! [&>button]:focus-visible:ring-0! [&>button]:focus-visible:ring-offset-0!">
       <Button onClick={handleMinimize} size="icon-xl" variant="ghost">
         <MinusIcon className="size-3.5" />
       </Button>

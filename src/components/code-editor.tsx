@@ -33,7 +33,7 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
       <LineNumbers lineCount={lineCount} />
       <div className="z-1 grid w-full min-w-0">
         <pre className="grid w-full min-w-0">
-          <code className="block whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
+          <code className="block min-w-full whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
             {highlightedTokens.map((line, lineIndex) => (
               <div
                 className="group/line leading-normal hover:bg-accent/50"

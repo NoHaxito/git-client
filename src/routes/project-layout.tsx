@@ -1,10 +1,23 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "@/components/navigation/app-sidebar";
 import { StatusBar } from "@/components/navigation/status-bar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useGitRemoteOrigin } from "@/hooks/tauri-queries";
+import { useRepoStore } from "@/stores/repo";
 
 export default function ProjectLayout() {
+  const currentRepo = useRepoStore((state) => state.currentRepo);
+  const setRemoteOrigin = useRepoStore((state) => state.setRemoteOrigin);
+  const { data: remoteOrigin } = useGitRemoteOrigin(currentRepo);
+
+  useEffect(() => {
+    if (remoteOrigin !== undefined) {
+      setRemoteOrigin(remoteOrigin);
+    }
+  }, [remoteOrigin, setRemoteOrigin]);
+
   return (
     <AnimatePresence>
       <motion.div
