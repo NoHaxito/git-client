@@ -9,8 +9,9 @@ type TokenProps = {
 export function Token({ token, lineIndex, tokenIndex }: TokenProps) {
   return (
     <span
-      className="min-w-full py-1 leading-normal"
-      data-line={lineIndex + 1}
+      className="py-1 leading-normal"
+      data-line={`${lineIndex + 1}`}
+      data-token={tokenIndex + 1}
       key={`line-${lineIndex}-token-${tokenIndex}-offset-${token.offset}`}
       style={{ color: token.color }}
     >

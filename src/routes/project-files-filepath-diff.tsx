@@ -92,11 +92,7 @@ export default function ProjectFilesFilepathDiff() {
   return (
     <ContextMenu>
       <ContextMenuTrigger
-        render={
-          <div className="flex flex-1">
-            <DiffViewer diffContent={content} filePath={decodedPath} />
-          </div>
-        }
+        render={<DiffViewer diffContent={content} filePath={decodedPath} />}
       />
       <ContextMenuPopup>
         <ContextMenuItem onClick={handleCloseFile}>

@@ -16,7 +16,7 @@ export default function ProjectFilesFilepath() {
     );
   }
 
-  if (!splat || !decodedPath) {
+  if (!(splat && decodedPath)) {
     return (
       <div className="flex h-full flex-1 items-center justify-center">
         <div className="text-muted-foreground text-sm">No file selected</div>
@@ -24,6 +24,7 @@ export default function ProjectFilesFilepath() {
     );
   }
 
-  return <FileViewer filePath={decodedPath} fileContent={fileContent || null} />;
+  return (
+    <FileViewer fileContent={fileContent || null} filePath={decodedPath} />
+  );
 }
-

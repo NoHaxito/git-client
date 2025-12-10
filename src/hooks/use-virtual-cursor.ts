@@ -220,7 +220,7 @@ export function useVirtualCursor({
 
       // Buscar el elemento de línea más cercano
       const target = e.target as HTMLElement;
-      const lineElement = target.closest("[data-line]");
+      const lineElement = target.closest("[data-line] [data-token]");
 
       if (lineElement) {
         const lineNumber =

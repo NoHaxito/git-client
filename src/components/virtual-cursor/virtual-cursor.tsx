@@ -19,7 +19,7 @@ export type VirtualCursorProps = {
 export function VirtualCursor({
   position,
   isVisible,
-  charWidth = 8.4,
+  charWidth = 8,
   lineHeight = 24,
   offsetTop = 4,
   offsetLeft = 0,

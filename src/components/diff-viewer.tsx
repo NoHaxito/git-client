@@ -22,7 +22,7 @@ export function DiffViewer({ filePath, diffContent }: DiffViewerProps) {
   }, [parsedLines]);
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col overflow-auto">
       <div className="flex flex-1 flex-col font-mono text-sm">
         {highlightedLines.map((line, index) => {
           const baseClassName = "py-0.5";

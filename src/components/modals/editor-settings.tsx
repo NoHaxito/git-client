@@ -15,10 +15,23 @@ export function EditorSettings() {
     settings,
     updateEditorGitBlameShow,
     updateEditorGitBlameExtendedDetails,
+    updateEditorMinimapShow,
   } = useSettings();
 
   return (
     <FieldGroup>
+      <Field orientation="responsive">
+        <FieldContent>
+          <FieldLabel>Show minimap</FieldLabel>
+          <FieldDescription>
+            Display a minimap of the code in the editor.
+          </FieldDescription>
+        </FieldContent>
+        <Switch
+          checked={settings.editor.minimap.show}
+          onCheckedChange={updateEditorMinimapShow}
+        />
+      </Field>
       <FieldSet>
         <FieldLegend>Git Blame</FieldLegend>
         <FieldDescription>

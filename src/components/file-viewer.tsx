@@ -1,8 +1,7 @@
 import { XIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { CodeEditor } from "@/components/code-editor";
-import { useFileStore } from "@/stores/file";
-import { useTabsStore } from "@/stores/tabs";
+import { type Tab, useTabsStore } from "@/stores/tabs";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -12,9 +11,9 @@ import {
 
 const PATH_SEPARATOR_REGEX = /[/\\]/;
 
-function getFileName(path: string): string {
+function getFileExtension(path: string): string {
   const parts = path.split(PATH_SEPARATOR_REGEX);
-  return parts.at(-1) || path;
+  return parts.at(-1)?.split(".").at(-1) || "";
 }
 
 type FileViewerProps = {
@@ -49,27 +48,25 @@ export function FileViewer({ filePath, fileContent }: FileViewerProps) {
 
   const handleCloseFile = () => {
     const tabId = `file:${filePath}`;
-    const currentTabs = tabs;
-    const willBeRemoved = activeTabId === tabId;
+    const currentIndex = tabs.findIndex((t) => t.id === tabId);
+    const isActiveTab = activeTabId === tabId;
+
+    let nextTab: Tab | undefined;
+    if (isActiveTab && tabs.length > 1) {
+      nextTab =
+        currentIndex > 0 ? tabs[currentIndex - 1] : tabs[currentIndex + 1];
+    }
+
     removeTab(tabId);
 
-    if (willBeRemoved && currentTabs.length > 1) {
-      const currentIndex = currentTabs.findIndex((t) => t.id === tabId);
-      const nextTab =
-        currentIndex > 0
-          ? currentTabs[currentIndex - 1]
-          : currentTabs[currentIndex + 1];
-      if (nextTab) {
-        const encodedPath = encodeURIComponent(nextTab.path);
-        if (nextTab.type === "diff") {
-          navigate(`/project/files/diff/${encodedPath}`);
-        } else {
-          navigate(`/project/files/view/${encodedPath}`);
-        }
-      } else {
-        navigate("/project/files");
-      }
-    } else if (willBeRemoved) {
+    if (nextTab) {
+      const encodedPath = encodeURIComponent(nextTab.path);
+      const route =
+        nextTab.type === "diff"
+          ? `/project/files/diff/${encodedPath}`
+          : `/project/files/view/${encodedPath}`;
+      navigate(route);
+    } else if (isActiveTab) {
       navigate("/project/files");
     }
   };
@@ -78,11 +75,11 @@ export function FileViewer({ filePath, fileContent }: FileViewerProps) {
     <ContextMenu>
       <ContextMenuTrigger
         render={
-          <div className="flex flex-1">
+          <div className="flex flex-1 overflow-auto">
             <CodeEditor
               filePath={filePath}
               key={filePath}
-              language={getFileName(filePath)}
+              language={getFileExtension(filePath)}
               readOnly
               value={fileContent}
             />

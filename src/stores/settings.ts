@@ -11,6 +11,9 @@ export const SETTINGS_KEYS = {
     clonePath: "workspace.clone_path",
   },
   editor: {
+    minimap: {
+      show: "editor.minimap.show",
+    },
     gitBlame: {
       show: "editor.git_blame.show",
       extendedDetails: "editor.git_blame.extended_details",
@@ -26,6 +29,9 @@ export type Settings = {
     clonePath: string;
   };
   editor: {
+    minimap: {
+      show: boolean;
+    };
     gitBlame: {
       show: boolean;
       extendedDetails: boolean;
@@ -41,6 +47,9 @@ const DEFAULT_SETTINGS: Settings = {
     clonePath: "",
   },
   editor: {
+    minimap: {
+      show: false,
+    },
     gitBlame: {
       show: false,
       extendedDetails: false,
@@ -56,7 +65,10 @@ type SettingsState = {
   updateAppearanceLanguage: (language: string) => Promise<void>;
   updateWorkspaceClonePath: (clonePath: string) => Promise<void>;
   updateEditorGitBlameShow: (show: boolean) => Promise<void>;
-  updateEditorGitBlameExtendedDetails: (extendedDetails: boolean) => Promise<void>;
+  updateEditorGitBlameExtendedDetails: (
+    extendedDetails: boolean
+  ) => Promise<void>;
+  updateEditorMinimapShow: (show: boolean) => Promise<void>;
 };
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -70,15 +82,19 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
 
     try {
-      const [language, clonePath, gitBlameShow, gitBlameExtendedDetails] =
-        await Promise.all([
-          tauriStore.get<string>(SETTINGS_KEYS.appearance.language),
-          tauriStore.get<string>(SETTINGS_KEYS.workspace.clonePath),
-          tauriStore.get<boolean>(SETTINGS_KEYS.editor.gitBlame.show),
-          tauriStore.get<boolean>(
-            SETTINGS_KEYS.editor.gitBlame.extendedDetails
-          ),
-        ]);
+      const [
+        language,
+        clonePath,
+        gitBlameShow,
+        gitBlameExtendedDetails,
+        minimapShow,
+      ] = await Promise.all([
+        tauriStore.get<string>(SETTINGS_KEYS.appearance.language),
+        tauriStore.get<string>(SETTINGS_KEYS.workspace.clonePath),
+        tauriStore.get<boolean>(SETTINGS_KEYS.editor.gitBlame.show),
+        tauriStore.get<boolean>(SETTINGS_KEYS.editor.gitBlame.extendedDetails),
+        tauriStore.get<boolean>(SETTINGS_KEYS.editor.minimap.show),
+      ]);
 
       set({
         settings: {
@@ -89,6 +105,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
             clonePath: clonePath ?? DEFAULT_SETTINGS.workspace.clonePath,
           },
           editor: {
+            minimap: {
+              show: minimapShow ?? DEFAULT_SETTINGS.editor.minimap.show,
+            },
             gitBlame: {
               show: gitBlameShow ?? DEFAULT_SETTINGS.editor.gitBlame.show,
               extendedDetails:
@@ -137,6 +156,24 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       throw error;
     }
   },
+  updateEditorMinimapShow: async (show: boolean) => {
+    try {
+      await tauriStore.set(SETTINGS_KEYS.editor.minimap.show, show);
+      await tauriStore.save();
+      set((state) => ({
+        settings: {
+          ...state.settings,
+          editor: {
+            ...state.settings.editor,
+            minimap: { ...state.settings.editor.minimap, show },
+          },
+        },
+      }));
+    } catch (error) {
+      console.error("Error updating editor.minimap.show:", error);
+      throw error;
+    }
+  },
 
   updateEditorGitBlameShow: async (show: boolean) => {
     try {
@@ -182,4 +219,3 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 }));
-
