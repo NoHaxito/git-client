@@ -197,7 +197,7 @@ export function Minimap({
 
   return (
     <div
-      className="sticky top-0 shrink-0 cursor-pointer select-none border-l bg-background dark:bg-zinc-900"
+      className="sticky top-0 right-0 z-10 shrink-0 cursor-pointer select-none border-l bg-background dark:bg-zinc-900"
       data-slot="code-minimap"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

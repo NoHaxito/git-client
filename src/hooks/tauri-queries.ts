@@ -189,6 +189,19 @@ export function useDiskSpace(path: string | null) {
   });
 }
 
+type SubfolderSize = {
+  name: string;
+  size: number;
+};
+
+export function useSubfoldersTotalSize(path: string | null) {
+  return useQuery({
+    queryKey: ["subfolders-total-size", path],
+    queryFn: () => invoke<SubfolderSize[]>("get_subfolders_total_size", { path }),
+    enabled: !!path,
+  });
+}
+
 export function useSystemInfo() {
   return useQuery({
     queryKey: ["system-info"],

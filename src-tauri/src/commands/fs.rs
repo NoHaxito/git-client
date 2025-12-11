@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use sysinfo::Disks;
 use tokio::process::Command;
-use serde::{Deserialize, Serialize};
 
 #[tauri::command]
 pub async fn get_folder_size(path: String) -> Result<u64, String> {
@@ -111,7 +111,7 @@ pub struct DirectoryEntry {
 #[tauri::command]
 pub fn list_directory(path: String) -> Result<Vec<DirectoryEntry>, String> {
     let dir_path = Path::new(&path);
-    
+
     if !dir_path.exists() {
         return Err("Path does not exist".to_string());
     }
@@ -154,12 +154,10 @@ pub fn list_directory(path: String) -> Result<Vec<DirectoryEntry>, String> {
         }
     }
 
-    entries.sort_by(|a, b| {
-        match (a.is_dir, b.is_dir) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.cmp(&b.name),
-        }
+    entries.sort_by(|a, b| match (a.is_dir, b.is_dir) {
+        (true, false) => std::cmp::Ordering::Less,
+        (false, true) => std::cmp::Ordering::Greater,
+        _ => a.name.cmp(&b.name),
     });
 
     Ok(entries)
@@ -168,7 +166,7 @@ pub fn list_directory(path: String) -> Result<Vec<DirectoryEntry>, String> {
 #[tauri::command]
 pub fn read_file(path: String) -> Result<String, String> {
     let file_path = Path::new(&path);
-    
+
     if !file_path.exists() {
         return Err("File does not exist".to_string());
     }
@@ -177,6 +175,64 @@ pub fn read_file(path: String) -> Result<String, String> {
         return Err("Path is a directory, not a file".to_string());
     }
 
-    std::fs::read_to_string(file_path)
-        .map_err(|e| format!("Failed to read file: {}", e))
+    std::fs::read_to_string(file_path).map_err(|e| format!("Failed to read file: {}", e))
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SubfolderSize {
+    pub name: String,
+    pub size: u64,
+}
+
+#[tauri::command]
+pub async fn get_subfolders_total_size(path: String) -> Result<Vec<SubfolderSize>, String> {
+    let dir_path = Path::new(&path);
+
+    if !dir_path.exists() {
+        return Ok(Vec::new());
+    }
+
+    if !dir_path.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    let entries = match std::fs::read_dir(dir_path) {
+        Ok(entries_iter) => entries_iter,
+        Err(e) => return Err(format!("Failed to read directory: {}", e)),
+    };
+
+    let mut subfolders = Vec::new();
+
+    for entry_result in entries {
+        match entry_result {
+            Ok(entry) => {
+                let entry_path = entry.path();
+                if entry_path.is_dir() {
+                    let folder_path = entry_path.to_string_lossy().to_string();
+                    let folder_name = entry_path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("")
+                        .to_string();
+
+                    match get_folder_size(folder_path.clone()).await {
+                        Ok(size) => {
+                            subfolders.push(SubfolderSize {
+                                name: folder_name,
+                                size,
+                            });
+                        }
+                        Err(e) => {
+                            eprintln!("Error getting size for {}: {}", folder_path, e);
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("Error reading directory entry: {}", e);
+            }
+        }
+    }
+
+    Ok(subfolders)
 }

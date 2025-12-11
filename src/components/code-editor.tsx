@@ -49,7 +49,10 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
       showPositionIndicator={true}
     >
       <LineNumbers lineCount={lineCount} />
-      <div className="z-1 grid w-full min-w-0" data-slot="code-content">
+      <div
+        className="z-1 grid w-full min-w-0 overflow-x-scroll"
+        data-slot="code-content"
+      >
         <pre className="grid w-full min-w-0">
           <code className="grid h-fit min-w-full whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
             {highlightedTokens.map((line, lineIndex) => (

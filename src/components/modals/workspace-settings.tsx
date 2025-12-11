@@ -16,7 +16,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDiskSpace, useFolderSize } from "@/hooks/tauri-queries";
+import { useFolderSize, useSubfoldersTotalSize } from "@/hooks/tauri-queries";
 import { useSettings } from "@/hooks/use-settings";
 
 function formatBytes(bytes: number): string {
@@ -29,6 +29,93 @@ function formatBytes(bytes: number): string {
   return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`;
 }
 
+const FOLDER_COLORS = [
+  "bg-blue-500",
+  "bg-purple-500",
+  "bg-green-500",
+  "bg-red-500",
+  "bg-yellow-500",
+  "bg-pink-500",
+  "bg-indigo-500",
+  "bg-orange-500",
+  "bg-teal-500",
+  "bg-cyan-500",
+];
+
+type FolderUsageBarProps = {
+  subfolders: Array<{ name: string; size: number }>;
+  otherSpaceInFolder: number;
+  folderTotalSize: number;
+};
+
+function FolderUsageBar({
+  subfolders,
+  otherSpaceInFolder,
+  folderTotalSize,
+}: FolderUsageBarProps) {
+  const sortedSubfolders = [...subfolders].sort((a, b) => b.size - a.size);
+  let currentLeft = 0;
+
+  return (
+    <>
+      <div className="relative h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+        {sortedSubfolders.map((folder, index) => {
+          const percent =
+            folderTotalSize > 0 ? (folder.size / folderTotalSize) * 100 : 0;
+          const left = currentLeft;
+          currentLeft += percent;
+
+          return (
+            <div
+              className={`absolute top-0 h-full ${FOLDER_COLORS[index % FOLDER_COLORS.length]} transition-all`}
+              key={folder.name}
+              style={{
+                left: `${left}%`,
+                width: `${percent}%`,
+              }}
+            />
+          );
+        })}
+        {otherSpaceInFolder > 0 && (
+          <div
+            className="absolute top-0 h-full bg-amber-500 transition-all"
+            style={{
+              left: `${currentLeft}%`,
+              width: `${
+                folderTotalSize > 0
+                  ? (otherSpaceInFolder / folderTotalSize) * 100
+                  : 0
+              }%`,
+            }}
+          />
+        )}
+      </div>
+      <div className="flex flex-wrap gap-4 text-muted-foreground text-xs">
+        {sortedSubfolders.map((folder, index) => (
+          <div className="flex items-center gap-1.5" key={folder.name}>
+            <div
+              className={`size-2 rounded-full ${FOLDER_COLORS[index % FOLDER_COLORS.length]}`}
+            />
+            <span>
+              {folder.name}: {formatBytes(folder.size)}
+            </span>
+          </div>
+        ))}
+        {otherSpaceInFolder > 0 && (
+          <div className="flex items-center gap-1.5">
+            <div className="size-2 rounded-full bg-amber-500" />
+            <span>Other: {formatBytes(otherSpaceInFolder)}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <div className="size-2 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+          <span>Total: {formatBytes(folderTotalSize)}</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function WorkspaceSettings() {
   const { settings, updateWorkspaceClonePath } = useSettings();
   const [cloneDirectory, setCloneDirectory] = useState(
@@ -36,16 +123,15 @@ export function WorkspaceSettings() {
   );
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: folderSize = 0, isLoading: isLoadingSize } = useFolderSize(
-    cloneDirectory || null
-  );
-  const { data: diskSpace, isLoading: isLoadingDisk } = useDiskSpace(
-    cloneDirectory || null
-  );
+  const { data: subfolders = [], isLoading: isLoadingSubfolders } =
+    useSubfoldersTotalSize(cloneDirectory || null);
+  const { data: folderTotalSize = 0, isLoading: isLoadingFolderSize } =
+    useFolderSize(cloneDirectory || null);
 
-  const totalSpace = diskSpace?.[0] || 0;
-  const freeSpace = diskSpace?.[1] || 0;
-  const isLoading = isLoadingSize || isLoadingDisk;
+  const subfoldersTotalSize =
+    subfolders?.reduce((total, folder) => total + folder.size, 0) || 0;
+  const otherSpaceInFolder = Math.max(0, folderTotalSize - subfoldersTotalSize);
+  const isLoading = isLoadingSubfolders || isLoadingFolderSize;
 
   useEffect(() => {
     setCloneDirectory(settings.workspace.clonePath);
@@ -109,12 +195,12 @@ export function WorkspaceSettings() {
       {cloneDirectory && (
         <div className="mt-auto space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Disk Usage</span>
+            <span className="text-muted-foreground">Folder Usage</span>
             {isLoading ? (
               <Skeleton className="h-4 w-24" />
             ) : (
               <span className="font-medium">
-                {formatBytes(folderSize)} / {formatBytes(totalSpace)}
+                {formatBytes(folderTotalSize)}
               </span>
             )}
           </div>
@@ -137,44 +223,12 @@ export function WorkspaceSettings() {
               </div>
             </>
           ) : (
-            totalSpace > 0 && (
-              <>
-                <div className="relative h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
-                  {folderSize > 0 && (
-                    <div
-                      className="absolute top-0 left-0 z-10 h-full bg-blue-500 transition-all"
-                      style={{
-                        width: `${(folderSize / totalSpace) * 100}%`,
-                      }}
-                    />
-                  )}
-                  {totalSpace - freeSpace - folderSize > 0 && (
-                    <div
-                      className="absolute top-0 h-full bg-amber-500 transition-all"
-                      style={{
-                        left: `${(folderSize / totalSpace) * 100}%`,
-                        width: `${((totalSpace - freeSpace - folderSize) / totalSpace) * 100}%`,
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="flex gap-4 text-muted-foreground text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <div className="size-2 rounded-full bg-blue-500" />
-                    <span>Workspace: {formatBytes(folderSize)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="size-2 rounded-full bg-amber-500" />
-                    <span>
-                      Other: {formatBytes(totalSpace - freeSpace - folderSize)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="size-2 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                    <span>Free: {formatBytes(freeSpace)}</span>
-                  </div>
-                </div>
-              </>
+            folderTotalSize > 0 && (
+              <FolderUsageBar
+                folderTotalSize={folderTotalSize}
+                otherSpaceInFolder={otherSpaceInFolder}
+                subfolders={subfolders}
+              />
             )
           )}
         </div>

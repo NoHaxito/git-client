@@ -75,7 +75,7 @@ export function FileViewer({ filePath, fileContent }: FileViewerProps) {
     <ContextMenu>
       <ContextMenuTrigger
         render={
-          <div className="flex flex-1 overflow-auto">
+          <div className="flex min-w-full flex-1 overflow-auto">
             <CodeEditor
               filePath={filePath}
               key={filePath}

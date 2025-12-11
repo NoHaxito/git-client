@@ -1,6 +1,8 @@
 mod commands;
 
-use commands::fs::{get_disk_space, get_folder_size, list_directory, read_file};
+use commands::fs::{
+    get_disk_space, get_folder_size, get_subfolders_total_size, list_directory, read_file,
+};
 use commands::git::{
     checkout_git_branch, get_commit_details, get_current_git_branch, get_git_blame,
     get_git_branches, get_git_commits, get_git_diff, get_git_remote_origin, get_git_status,
@@ -16,6 +18,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_folder_size,
+            get_subfolders_total_size,
             get_disk_space,
             get_system_info,
             get_git_version,
