@@ -4,16 +4,12 @@
 import { useCallback, useMemo, useRef } from "react";
 import { CodeLine } from "@/components/code-editor/components/code-line";
 import { LineNumbers } from "@/components/code-editor/components/line-numbers";
-import { Minimap } from "@/components/code-editor/components/minimap";
 import { useGitBlame } from "@/components/code-editor/hooks/use-git-blame";
 import { useSyntaxHighlighting } from "@/components/code-editor/hooks/use-syntax-highlighting";
 import type { CodeEditorProps } from "@/components/code-editor/types";
 import { VirtualCursorWrapper } from "@/components/virtual-cursor/virtual-cursor-wrapper";
-import { useSettings } from "@/hooks/use-settings";
 
 export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
-  const { settings } = useSettings();
-  const isMinimapEnabled = settings.editor.minimap.show;
   const { highlightedTokens } = useSyntaxHighlighting(value, language);
   const blameData = useGitBlame(filePath);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +34,7 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
   return (
     <VirtualCursorWrapper
       charWidth={7.5}
-      className="flex h-full w-full flex-1 overflow-y-scroll font-mono text-sm"
+      className="flex h-full w-full flex-1 font-mono text-sm"
       content={value}
       cursorColor="#528bff"
       cursorOffsetLeft={56}
@@ -46,13 +42,10 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
       editable={false}
       lineHeight={21}
       ref={scrollContainerRef}
-      showPositionIndicator={true}
+      showPositionIndicator={false}
     >
       <LineNumbers lineCount={lineCount} />
-      <div
-        className="z-1 grid w-full min-w-0 overflow-x-scroll"
-        data-slot="code-content"
-      >
+      <div className="z-1 grid w-full min-w-0" data-slot="code-content">
         <pre className="grid w-full min-w-0">
           <code className="grid h-fit min-w-full whitespace-pre py-1 text-[#24292e] dark:text-[#d4d4d4]">
             {highlightedTokens.map((line, lineIndex) => (
@@ -70,14 +63,14 @@ export function CodeEditor({ value, language, filePath }: CodeEditorProps) {
           </code>
         </pre>
       </div>
-      {isMinimapEnabled && (
+      {/* {isMinimapEnabled && (
         <Minimap
           code={value}
           highlightedTokens={highlightedTokens}
           lineHeight={21}
           scrollContainerRef={scrollContainerRef}
         />
-      )}
+      )} */}
     </VirtualCursorWrapper>
   );
 }

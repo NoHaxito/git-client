@@ -71,7 +71,7 @@ export default function ProjectLayout() {
         >
           <AppSidebar />
           <SidebarInset className="m-2 flex max-h-[calc(100vh-var(--header-height))] flex-1 flex-col overflow-hidden rounded-xl border dark:bg-zinc-900">
-            <CustomTabs />
+            {location.pathname.includes("/project/files") && <CustomTabs />}
             <Outlet />
           </SidebarInset>
         </SidebarProvider>

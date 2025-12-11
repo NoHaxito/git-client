@@ -142,6 +142,10 @@
     @apply border-border outline-ring/50;
     scrollbar-width: thin;
     scrollbar-color: var(--color-neutral-500) transparent;
+    /* Oculta las flechas superior e inferior de la scrollbar */
+    ::-webkit-scrollbar-button {
+      display: none;
+    }
   }
   body {
     @apply bg-sidebar text-foreground;

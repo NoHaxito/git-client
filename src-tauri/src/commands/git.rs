@@ -391,7 +391,11 @@ pub struct Commit {
 }
 
 #[tauri::command]
-pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
+pub async fn get_git_commits(
+    repo_path: String,
+    skip: Option<u32>,
+    limit: Option<u32>,
+) -> Result<Vec<Commit>, String> {
     let repo = Path::new(&repo_path);
 
     if !repo.exists() {
@@ -403,10 +407,17 @@ pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
         return Err("Not a git repository".to_string());
     }
 
-    let output = Command::new("git")
-        .arg("--no-pager")
+    let mut cmd = Command::new("git");
+    cmd.arg("--no-pager")
         .arg("log")
-        .arg("--pretty=format:%H%x1E%an%x1E%ae%x1E%ai%x1E%s%x1F")
+        .arg("--pretty=format:%H%x1E%an%x1E%ae%x1E%ai%x1E%s%x1F");
+
+    if let Some(limit_val) = limit {
+        let total_needed = skip.unwrap_or(0) + limit_val;
+        cmd.arg("-n").arg(total_needed.to_string());
+    }
+
+    let output = cmd
         .current_dir(repo)
         .output()
         .await
@@ -427,13 +438,28 @@ pub async fn get_git_commits(repo_path: String) -> Result<Vec<Commit>, String> {
     let record_separator = '\u{001E}';
     let unit_separator = '\u{001F}';
 
-    for record in stdout.split(unit_separator) {
+    let records: Vec<&str> = stdout.split(unit_separator).collect();
+    let skip_count = skip.unwrap_or(0) as usize;
+    let mut skipped = 0;
+
+    for record in records.iter() {
         if record.trim().is_empty() {
             continue;
         }
 
         let parts: Vec<&str> = record.split(record_separator).collect();
         if parts.len() >= 5 {
+            if skipped < skip_count {
+                skipped += 1;
+                continue;
+            }
+
+            if let Some(limit_val) = limit {
+                if commits.len() >= limit_val as usize {
+                    break;
+                }
+            }
+
             let hash = parts[0].trim().to_string();
             let author = parts[1].trim().to_string();
             let email = parts[2].trim().to_string();
@@ -493,7 +519,7 @@ pub async fn get_commit_details(
 
     let commit_output = Command::new("git")
         .arg("show")
-        .arg("--pretty=format:{%n  \"hash\": \"%H\",%n  \"author\": \"%an\",%n  \"email\": \"%ae\",%n  \"date\": \"%ad\",%n  \"message\": \"%f\"%n}")
+        .arg("--pretty=format:{%n  \"hash\": \"%H\",%n  \"author\": \"%an\",%n  \"email\": \"%ae\",%n  \"date\": \"%ad\",%n  \"message\": \"%s\"%n}")
         .arg("--date=iso")
         .arg("--no-patch")
         .arg(&commit_hash)

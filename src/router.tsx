@@ -1,6 +1,7 @@
 import { createBrowserRouter, redirect } from "react-router";
 import EmptyRoute from "@/routes/empty";
 import ProjectCommits from "@/routes/project-commits";
+import ProjectCommitsHash from "@/routes/project-commits-hash";
 import ProjectFiles from "@/routes/project-files";
 import ProjectFilesFilepath from "@/routes/project-files-filepath";
 import ProjectFilesFilepathDiff from "@/routes/project-files-filepath-diff";
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: "commits",
         Component: ProjectCommits,
+      },
+      {
+        path: "commits/:hash",
+        Component: ProjectCommitsHash,
       },
     ],
   },

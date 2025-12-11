@@ -371,7 +371,10 @@ function SidebarSeparator({
   );
 }
 
-function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarContent({
+  className,
+  ...props
+}: React.ComponentProps<"div"> & { ref?: React.RefObject<HTMLDivElement> }) {
   return (
     <div
       className={cn(

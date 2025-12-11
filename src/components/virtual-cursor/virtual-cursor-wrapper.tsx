@@ -60,7 +60,10 @@ export const VirtualCursorWrapper = ({
       <div
         aria-label="Code editor"
         aria-multiline="true"
-        className={cn("relative outline-none", className)}
+        className={cn(
+          "relative h-full flex-1 overflow-scroll outline-none",
+          className
+        )}
         onBlur={() => setIsFocused(false)}
         onClick={handleClick}
         onFocus={() => setIsFocused(true)}

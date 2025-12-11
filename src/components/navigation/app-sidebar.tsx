@@ -48,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const currentBranch = useRepoStore((state) => state.currentBranch);
 
   const isFilesRoute = location.pathname.startsWith("/project/files");
-  const isCommitsRoute = location.pathname === "/project/commits";
+  const isCommitsRoute = location.pathname.includes("/project/commits");
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           </div>
         </SidebarHeader>
-        <SidebarContent className="overflow-x-hidden" ref={parentRef}>
+        <SidebarContent ref={parentRef as React.RefObject<HTMLDivElement>}>
           <SidebarGroup>
             <SidebarGroupContent>
               {!currentRepo && (
@@ -155,7 +155,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {currentRepo && isCommitsRoute && (
                 <CommitsList
                   key={`${currentRepo}-${currentBranch || "default"}`}
-                  parentRef={parentRef}
+                  parentRef={parentRef as React.RefObject<HTMLDivElement>}
                   repoPath={currentRepo}
                 />
               )}

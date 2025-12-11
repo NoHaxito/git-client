@@ -8,6 +8,7 @@ use commands::git::{
     get_git_branches, get_git_commits, get_git_diff, get_git_remote_origin, get_git_status,
     get_git_version, is_git_repo, list_git_repos,
 };
+use commands::global_search::global_search;
 use commands::system::get_system_info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -34,7 +35,8 @@ pub fn run() {
             get_git_diff,
             get_git_remote_origin,
             list_directory,
-            read_file
+            read_file,
+            global_search
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

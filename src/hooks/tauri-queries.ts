@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 
 export function useGitStatus(repoPath: string | null) {
@@ -72,11 +77,25 @@ export function useCheckoutGitBranch() {
   });
 }
 
+const COMMITS_PAGE_SIZE = 50;
+
 export function useGitCommits(repoPath: string | null) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["git-commits", repoPath],
-    queryFn: () => invoke<Commit[]>("get_git_commits", { repoPath }),
+    queryFn: ({ pageParam = 0 }) =>
+      invoke<Commit[]>("get_git_commits", {
+        repoPath,
+        skip: pageParam as number,
+        limit: COMMITS_PAGE_SIZE,
+      }),
     enabled: !!repoPath,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage || lastPage.length < COMMITS_PAGE_SIZE) {
+        return;
+      }
+      return allPages.length * COMMITS_PAGE_SIZE;
+    },
   });
 }
 
@@ -135,7 +154,7 @@ export function useGitDiff(repoPath: string | null, filePath: string | null) {
 export function useGitBlame(
   repoPath: string | null,
   filePath: string | null,
-  enabled: boolean = true
+  enabled = true
 ) {
   return useQuery({
     queryKey: ["git-blame", repoPath, filePath],
@@ -197,7 +216,8 @@ type SubfolderSize = {
 export function useSubfoldersTotalSize(path: string | null) {
   return useQuery({
     queryKey: ["subfolders-total-size", path],
-    queryFn: () => invoke<SubfolderSize[]>("get_subfolders_total_size", { path }),
+    queryFn: () =>
+      invoke<SubfolderSize[]>("get_subfolders_total_size", { path }),
     enabled: !!path,
   });
 }
@@ -221,5 +241,25 @@ export function useGitRemoteOrigin(repoPath: string | null) {
     queryKey: ["git-remote-origin", repoPath],
     queryFn: () => invoke<string | null>("get_git_remote_origin", { repoPath }),
     enabled: !!repoPath,
+  });
+}
+
+type GlobalSearchResult = {
+  files: string[];
+  commits: Commit[];
+};
+
+export function useGlobalSearch(
+  repoPath: string | null,
+  query: string | null
+) {
+  return useQuery({
+    queryKey: ["global-search", repoPath, query],
+    queryFn: () =>
+      invoke<GlobalSearchResult>("global_search", {
+        repoPath,
+        query: query || "",
+      }),
+    enabled: !!(repoPath && query && query.trim().length > 0),
   });
 }
