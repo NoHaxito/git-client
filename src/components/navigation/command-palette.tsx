@@ -37,7 +37,7 @@ export function CommandPalette() {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
@@ -94,6 +94,10 @@ export function CommandPalette() {
   const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter);
   };
+
+  if (!currentRepo) {
+    return null;
+  }
 
   return (
     <>
