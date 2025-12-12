@@ -1,7 +1,15 @@
-import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { FolderOpenIcon, FolderSync } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SidebarMenu } from "@/components/ui/sidebar";
 import { useGitStatus, useListDirectory } from "@/hooks/tauri-queries";
+import {
+  ContextMenu,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuPopup,
+  ContextMenuTrigger,
+} from "../ui/context-menu";
 import { FileTreeItem } from "./file-tree-item";
 import { checkIfIgnored, loadGitignore } from "./gitignore-utils";
 import type { FileTreeNode, GitStatus } from "./types";
@@ -134,7 +142,11 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
         const entryStatus = gitStatus[entryRelativePath] as
           | GitStatus
           | undefined;
-        const isIgnored = checkIfIgnored(entry.path, rootPath, gitignorePatterns);
+        const isIgnored = checkIfIgnored(
+          entry.path,
+          rootPath,
+          gitignorePatterns
+        );
 
         return {
           ...entry,
@@ -161,10 +173,9 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
             queryKey: ["list-directory", path],
             queryFn: async () => {
               const { invoke } = await import("@tauri-apps/api/core");
-              return invoke<Array<{ name: string; path: string; is_dir: boolean }>>(
-                "list_directory",
-                { path }
-              );
+              return invoke<
+                Array<{ name: string; path: string; is_dir: boolean }>
+              >("list_directory", { path });
             },
           });
           return data;
@@ -183,7 +194,15 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
     };
 
     buildTree();
-  }, [entries, gitStatus, gitignorePatterns, rootPath, searchQuery, isLoading, queryClient]);
+  }, [
+    entries,
+    gitStatus,
+    gitignorePatterns,
+    rootPath,
+    searchQuery,
+    isLoading,
+    queryClient,
+  ]);
 
   if (isLoading) {
     return (
@@ -214,16 +233,34 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
   }
 
   return (
-    <SidebarMenu className="gap-0">
-      {filteredRootNode.children?.map((child) => (
-        <FileTreeItem
-          gitignorePatterns={gitignorePatterns}
-          gitStatus={gitStatus}
-          key={child.path}
-          node={child}
-          rootPath={rootPath}
-        />
-      ))}
-    </SidebarMenu>
+    <ContextMenu>
+      <ContextMenuTrigger
+        render={
+          <SidebarMenu className="flex-1 gap-0">
+            {filteredRootNode.children?.map((child) => (
+              <FileTreeItem
+                gitignorePatterns={gitignorePatterns}
+                gitStatus={gitStatus}
+                key={child.path}
+                node={child}
+                rootPath={rootPath}
+              />
+            ))}
+          </SidebarMenu>
+        }
+      />
+      <ContextMenuPopup className="w-52">
+        <ContextMenuGroup>
+          <ContextMenuItem>
+            <FolderSync />
+            Synchronize Changes
+          </ContextMenuItem>
+          <ContextMenuItem className="data-highlighted:[&>svg]:fill-current">
+            <FolderOpenIcon />
+            Reveal in File Explorer
+          </ContextMenuItem>
+        </ContextMenuGroup>
+      </ContextMenuPopup>
+    </ContextMenu>
   );
 }

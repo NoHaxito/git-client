@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDownIcon, GitBranchIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,16 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRepoStore } from "@/stores/repo";
 import {
   useCheckoutGitBranch,
   useCurrentGitBranch,
   useGitBranches,
 } from "@/hooks/tauri-queries";
+import { useRepoStore } from "@/stores/repo";
 import type { Branch } from "./types";
 
 export function BranchSelector() {
+  const queryClient = useQueryClient();
   const currentRepo = useRepoStore((state) => state.currentRepo);
   const setBranch = useRepoStore((state) => state.setBranch);
   const { data: branchList = [], isLoading: isLoadingBranches } =
@@ -65,6 +67,8 @@ export function BranchSelector() {
         branchName: branch.value,
       });
       setBranch(branch.value);
+      queryClient.invalidateQueries({ queryKey: ["list-directory"] });
+      queryClient.invalidateQueries({ queryKey: ["git-commits"] });
     } catch (error) {
       console.error("Error checking out branch:", error);
     }

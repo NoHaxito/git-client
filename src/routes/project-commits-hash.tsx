@@ -1,5 +1,5 @@
-import { ArrowLeftIcon, CalendarIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
+import { ArrowLeftIcon, CalendarIcon, ExternalLinkIcon } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCommitDetails } from "@/hooks/tauri-queries";
 import { useAvatarFromOrigin } from "@/hooks/use-avatar-from-origin";
+import { getGitOrigin } from "@/lib/get-git-origin";
 import { getHostFromUrl } from "@/lib/utils";
 import { useRepoStore } from "@/stores/repo";
 
@@ -115,6 +116,21 @@ export default function ProjectCommitDetails() {
           </div>
           <div className="font-medium text-base">{details.message}</div>
         </div>
+        <div className="ml-auto">
+          <Button
+            render={
+              <Link
+                target="_blank"
+                to={`${remoteOrigin}/commit/${details.hash}`}
+              />
+            }
+            size="sm"
+            variant="ghost"
+          >
+            <ExternalLinkIcon className="size-4" />
+            Open in {getGitOrigin(remoteOrigin ?? "")}
+          </Button>
+        </div>
       </div>
       <ScrollArea className="flex-1">
         <div className="flex flex-col-reverse gap-2 p-6 xl:flex-row">
@@ -162,7 +178,7 @@ export default function ProjectCommitDetails() {
               </Card>
             )}
           </div>
-          <div className="sticky top-6 grid min-w-96 max-w-96 gap-2 self-start">
+          <div className="top-6 grid w-full min-w-96 gap-2 self-start xl:sticky xl:w-96 xl:max-w-96">
             <Card className="p-4">
               <div className="grid gap-4">
                 <div className="flex items-center gap-3">

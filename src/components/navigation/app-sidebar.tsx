@@ -1,6 +1,11 @@
 "use client";
 
-import { FileTextIcon, GitCommitIcon, SearchIcon } from "lucide-react";
+import {
+  FileTextIcon,
+  GitCommitIcon,
+  GitPullRequestIcon,
+  SearchIcon,
+} from "lucide-react";
 import * as React from "react";
 import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -27,14 +32,23 @@ import {
 
 const navMain = [
   {
+    id: "files",
     title: "Files",
     path: "/project/files",
     icon: FileTextIcon,
   },
   {
+    id: "commits",
     title: "Commits",
     path: "/project/commits",
     icon: GitCommitIcon,
+  },
+  {
+    id: "pull-requests",
+    title: "Pull Requests",
+    path: "/project/pull-requests",
+    icon: GitPullRequestIcon,
+    disabled: true,
   },
 ];
 
@@ -44,8 +58,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState("");
   const { setOpen } = useSidebar();
+
+  const remoteOrigin = useRepoStore((state) => state.remoteOrigin);
   const currentRepo = useRepoStore((state) => state.currentRepo);
   const currentBranch = useRepoStore((state) => state.currentBranch);
+
+  const isGithubOrGitlab =
+    remoteOrigin?.includes("github.com") ||
+    remoteOrigin?.includes("gitlab.com");
 
   const isFilesRoute = location.pathname.startsWith("/project/files");
   const isCommitsRoute = location.pathname.includes("/project/commits");
@@ -90,6 +110,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         className="px-2"
+                        disabled={item.disabled}
+                        hidden={
+                          item.id === "pull-requests" && !isGithubOrGitlab
+                        }
                         isActive={isActive}
                         onClick={() => {
                           navigate(item.path);
@@ -144,9 +168,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           </div>
         </SidebarHeader>
-        <SidebarContent ref={parentRef as React.RefObject<HTMLDivElement>}>
-          <SidebarGroup>
-            <SidebarGroupContent>
+        <SidebarContent
+          className="flex flex-col"
+          ref={parentRef as React.RefObject<HTMLDivElement>}
+        >
+          <SidebarGroup className="flex-1">
+            <SidebarGroupContent className="flex flex-1 flex-col">
               {!currentRepo && (
                 <div className="flex items-center justify-center p-4 text-muted-foreground text-sm">
                   No repository open

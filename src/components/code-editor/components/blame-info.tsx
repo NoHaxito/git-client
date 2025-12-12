@@ -80,10 +80,13 @@ export function BlameInfo({ blameLine }: BlameInfoProps) {
             {blameLine.commit_message}
           </div>
           <div className="flex items-center gap-2 border-t p-2">
-            <div className="flex items-center gap-1 font-mono text-xs hover:underline">
+            <Link
+              className="flex items-center gap-1 font-mono text-xs hover:underline"
+              to={`/project/commits/${blameLine.commit_hash}`}
+            >
               <Hash className="size-3 text-muted-foreground" />
               {blameLine.commit_hash.slice(0, 7)}
-            </div>
+            </Link>
             <Separator orientation="vertical" />
             {remoteOrigin && (
               <Link
