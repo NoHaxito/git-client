@@ -18,7 +18,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { cn } from "@/lib/utils";
+import { cn, parseRemoteOrigin } from "@/lib/utils";
 import { useRepoStore } from "@/stores/repo";
 import type { GitStatus } from "./types";
 import { normalizePath } from "./utils";
@@ -67,7 +67,7 @@ export function ItemContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger render={children} />
-      <ContextMenuPopup>
+      <ContextMenuPopup align="start">
         {!is_dir && (
           <ContextMenuItem render={<Link to={`/project/files/view/${path}`} />}>
             <ArrowRightIcon />
@@ -79,7 +79,7 @@ export function ItemContextMenu({
             render={
               <Link
                 target="_blank"
-                to={`${remoteOrigin}/blob/${currentBranch}/${normalizePath(path, rootPath)}`}
+                to={`${parseRemoteOrigin(remoteOrigin as string)}/blob/${currentBranch}/${normalizePath(path, rootPath)}`}
               />
             }
           >

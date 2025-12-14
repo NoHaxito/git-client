@@ -1,4 +1,5 @@
-import { ChevronRight, Folder, Loader2Icon } from "lucide-react";
+import { FolderIcon } from "@react-symbols/icons/utils";
+import { ChevronRight, Loader2Icon } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuSub } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { GitStatusBadge } from "./git-status-badge";
@@ -41,7 +42,11 @@ export function FolderItem({
               isExpanded && "rotate-90"
             )}
           />
-          <Folder className="size-3 shrink-0 text-muted-foreground" />
+          {/* <Folder className="size-3 shrink-0 text-muted-foreground" /> */}
+          <FolderIcon
+            className="size-4 shrink-0 text-muted-foreground"
+            folderName={node.name}
+          />
           <span className="min-w-0 truncate">{node.name}</span>
           {isLoading && (
             <Loader2Icon className="ml-auto size-3 shrink-0 animate-spin text-muted-foreground" />

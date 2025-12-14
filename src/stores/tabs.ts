@@ -85,4 +85,3 @@ export const useTabsStore = create<TabsState>((set, get) => ({
     set({ tabs: [], activeTabId: null });
   },
 }));
-

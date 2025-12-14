@@ -381,6 +381,33 @@ pub async fn checkout_git_branch(repo_path: String, branch_name: String) -> Resu
     Ok(())
 }
 
+#[tauri::command]
+pub async fn pull_git_repo(repo_path: String, branch_name: String) -> Result<(), String> {
+    let repo = Path::new(&repo_path);
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+    let output = Command::new("git")
+        .arg("pull")
+        .arg("origin")
+        .arg(branch_name)
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git pull: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Git pull failed: {}", stderr));
+    }
+
+    Ok(())
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Commit {
     pub hash: String,

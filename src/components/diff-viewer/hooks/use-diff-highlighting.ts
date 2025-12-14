@@ -1,13 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import type { ThemedToken } from "shiki";
 import { getShikiHighlighter } from "@/lib/shiki-highlighter";
 import { getLanguageFromFileName } from "../../code-editor/utils";
 import type { DiffLine } from "../types";
 
-export function useDiffHighlighting(
-  parsedLines: DiffLine[],
-  fileName: string
-) {
+export function useDiffHighlighting(parsedLines: DiffLine[], fileName: string) {
   const [highlighter, setHighlighter] = useState<Awaited<
     ReturnType<typeof getShikiHighlighter>
   > | null>(null);
@@ -78,4 +74,3 @@ export function useDiffHighlighting(
 
   return { highlightedLines };
 }
-

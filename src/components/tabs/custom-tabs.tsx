@@ -74,7 +74,7 @@ export function CustomTabs() {
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
           const FileIcon =
-            tab.type === "diff" ? DiffIcon : getFileIcon(tab.path);
+            tab.type === "diff" ? DiffIcon : getFileIcon(tab.label);
           return (
             <button
               className={cn(

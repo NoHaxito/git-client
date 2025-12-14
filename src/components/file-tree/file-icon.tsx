@@ -1,5 +1,5 @@
-import type { FC, SVGProps } from "react";
 import {
+  Biome,
   BracketsBlue,
   BracketsYellow,
   CLang,
@@ -22,8 +22,12 @@ import {
   Lock,
   Lua,
   Markdown,
+  Next,
+  Node,
+  Nuxt,
   Perl,
   PHP,
+  PNPM,
   Python,
   R,
   Reactjs,
@@ -35,18 +39,77 @@ import {
   Shell,
   Svelte,
   Swift,
+  Tailwind,
+  Tsconfig,
+  TsTypes,
   TypeScript,
+  Vite,
   Vue,
   XML,
   Yaml,
+  Yarn,
 } from "@react-symbols/icons";
+import type { FC, SVGProps } from "react";
 
-const FILE_ICON_MAP: Record<string, FC<SVGProps<SVGSVGElement>>> = {
+type FileIconComponent = FC<SVGProps<SVGSVGElement>>;
+
+const EXTENSION_REGEX = /\.[^.]*$/;
+const DOT_REGEX = /\./g;
+
+const FILE_NAME_MAP: Record<string, FileIconComponent> = {
+  "tsconfig.json": Tsconfig,
+  "jsconfig.json": Js,
+  "package.json": Node,
+  "package-lock.json": Node,
+  "yarn.lock": Yarn,
+  "pnpm-lock.yaml": PNPM,
+  ".gitignore": Git,
+  ".gitattributes": Git,
+  ".eslintrc": Js,
+  ".eslintrc.json": Js,
+  ".eslintrc.js": Js,
+  ".eslintrc.cjs": Js,
+  ".eslintrc.mjs": Js,
+  ".prettierrc": Js,
+  ".prettierrc.json": BracketsYellow,
+  ".prettierrc.js": Js,
+  "biome.json": Biome,
+  "biome.jsonc": Biome,
+  ".babelrc": Js,
+  ".babelrc.json": BracketsYellow,
+  ".babelrc.js": Js,
+  "webpack.config.js": Js,
+  "webpack.config.ts": TypeScript,
+  "vite.config.js": Vite,
+  "vite.config.ts": Vite,
+  "vite.config.mjs": Vite,
+  "next.config.js": Next,
+  "next.config.ts": Next,
+  "next.config.mjs": Next,
+  "nuxt.config.js": Nuxt,
+  "nuxt.config.ts": Nuxt,
+  dockerfile: Docker,
+  "docker-compose.yml": Yaml,
+  "docker-compose.yaml": Yaml,
+  readme: Markdown,
+  "readme.md": Markdown,
+  makefile: Shell,
+  ".env": Document,
+  ".env.local": Document,
+  ".env.production": Document,
+  ".env.development": Document,
+  ".env.test": Document,
+  "tailwind.config.js": Tailwind,
+  "tailwind.config.ts": Tailwind,
+};
+
+const EXTENSION_MAP: Record<string, FileIconComponent> = {
   js: Js,
   mjs: Js,
   jsx: Reactjs,
   ts: TypeScript,
   tsx: Reactts,
+  "d.ts": TsTypes,
   json: BracketsYellow,
   css: BracketsBlue,
   scss: Sass,
@@ -97,8 +160,51 @@ const FILE_ICON_MAP: Record<string, FC<SVGProps<SVGSVGElement>>> = {
   exe: Exe,
 };
 
-export function getFileIcon(fileName: string): FC<SVGProps<SVGSVGElement>> {
-  const extension = fileName.split(".").pop()?.toLowerCase() || "";
-  return FILE_ICON_MAP[extension] || Document;
+const COMPOSITE_EXTENSIONS = [".d.ts"];
+
+function getExtension(fileName: string): string {
+  const lowerFileName = fileName.toLowerCase();
+
+  for (const compositeExt of COMPOSITE_EXTENSIONS) {
+    if (lowerFileName.endsWith(compositeExt)) {
+      return compositeExt.slice(1);
+    }
+  }
+
+  const parts = fileName.split(".");
+  return parts.length > 1 ? parts.at(-1)?.toLowerCase() || "" : "";
 }
 
+function getFileNameVariants(fileName: string): string[] {
+  const lowerFileName = fileName.toLowerCase();
+  const variants: string[] = [lowerFileName];
+
+  const nameWithoutExt = lowerFileName.replace(EXTENSION_REGEX, "");
+  if (nameWithoutExt !== lowerFileName) {
+    variants.push(nameWithoutExt);
+  }
+
+  const nameWithoutDots = lowerFileName.replace(DOT_REGEX, "");
+  if (nameWithoutDots !== lowerFileName) {
+    variants.push(nameWithoutDots);
+  }
+
+  return variants;
+}
+
+export function getFileIcon(fileName: string): FileIconComponent {
+  const variants = getFileNameVariants(fileName);
+
+  for (const variant of variants) {
+    if (FILE_NAME_MAP[variant]) {
+      return FILE_NAME_MAP[variant];
+    }
+  }
+
+  const extension = getExtension(fileName);
+  if (extension && EXTENSION_MAP[extension]) {
+    return EXTENSION_MAP[extension];
+  }
+
+  return Document;
+}

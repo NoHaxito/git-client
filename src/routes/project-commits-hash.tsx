@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCommitDetails } from "@/hooks/tauri-queries";
 import { useAvatarFromOrigin } from "@/hooks/use-avatar-from-origin";
 import { getGitOrigin } from "@/lib/get-git-origin";
-import { getHostFromUrl } from "@/lib/utils";
+import { getHostFromUrl, parseRemoteOrigin } from "@/lib/utils";
 import { useRepoStore } from "@/stores/repo";
 
 function formatDate(dateStr: string): string {
@@ -121,7 +121,7 @@ export default function ProjectCommitDetails() {
             render={
               <Link
                 target="_blank"
-                to={`${remoteOrigin}/commit/${details.hash}`}
+                to={`${parseRemoteOrigin(remoteOrigin as string)}/commit/${details.hash}`}
               />
             }
             size="sm"

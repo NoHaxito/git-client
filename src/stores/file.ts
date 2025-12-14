@@ -17,4 +17,3 @@ export const useFileStore = create<FileState>((set) => ({
   setFileContent: (content) => set({ fileContent: content }),
   setIsLoading: (loading) => set({ isLoading: loading }),
 }));
-

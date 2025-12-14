@@ -17,10 +17,12 @@ export const useRepoStore = create<RepoState>()(
       currentRepo: null,
       currentBranch: null,
       remoteOrigin: null,
-      setRepo: (path) => set({ currentRepo: path, currentBranch: null, remoteOrigin: null }),
+      setRepo: (path) =>
+        set({ currentRepo: path, currentBranch: null, remoteOrigin: null }),
       setBranch: (branch) => set({ currentBranch: branch }),
       setRemoteOrigin: (origin) => set({ remoteOrigin: origin }),
-      clearRepo: () => set({ currentRepo: null, currentBranch: null, remoteOrigin: null }),
+      clearRepo: () =>
+        set({ currentRepo: null, currentBranch: null, remoteOrigin: null }),
     }),
     {
       name: "repo-storage",

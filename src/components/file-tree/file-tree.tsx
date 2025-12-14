@@ -2,7 +2,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FolderOpenIcon, FolderSync } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SidebarMenu } from "@/components/ui/sidebar";
-import { useGitStatus, useListDirectory } from "@/hooks/tauri-queries";
+import {
+  useCurrentGitBranch,
+  useGitStatus,
+  useListDirectory,
+  usePullGitRepo,
+} from "@/hooks/tauri-queries";
 import {
   ContextMenu,
   ContextMenuGroup,
@@ -120,6 +125,8 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
     useListDirectory(rootPath);
   const { data: gitStatus = {}, isLoading: isLoadingStatus } =
     useGitStatus(rootPath);
+  const { data: currentBranch } = useCurrentGitBranch(rootPath);
+  const pullMutation = usePullGitRepo();
 
   const isLoading = isLoadingEntries || isLoadingStatus;
 
@@ -249,9 +256,23 @@ export function FileTree({ rootPath, searchQuery = "" }: FileTreeProps) {
           </SidebarMenu>
         }
       />
-      <ContextMenuPopup className="w-52">
+      <ContextMenuPopup align="start" className="w-52">
         <ContextMenuGroup>
-          <ContextMenuItem>
+          <ContextMenuItem
+            onClick={async () => {
+              if (!currentBranch) {
+                return;
+              }
+              try {
+                await pullMutation.mutateAsync({
+                  repoPath: rootPath,
+                  branchName: currentBranch,
+                });
+              } catch (error) {
+                console.error("Error pulling repository:", error);
+              }
+            }}
+          >
             <FolderSync />
             Synchronize Changes
           </ContextMenuItem>

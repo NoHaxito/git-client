@@ -12,4 +12,3 @@ export type DiffLine = {
   oldLineNumber?: number;
   newLineNumber?: number;
 };
-

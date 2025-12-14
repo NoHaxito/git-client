@@ -6,7 +6,7 @@ use commands::fs::{
 use commands::git::{
     checkout_git_branch, get_commit_details, get_current_git_branch, get_git_blame,
     get_git_branches, get_git_commits, get_git_diff, get_git_remote_origin, get_git_status,
-    get_git_version, is_git_repo, list_git_repos,
+    get_git_version, is_git_repo, list_git_repos, pull_git_repo,
 };
 use commands::global_search::global_search;
 use commands::system::get_system_info;
@@ -30,6 +30,7 @@ pub fn run() {
             get_git_branches,
             get_current_git_branch,
             checkout_git_branch,
+            pull_git_repo,
             get_git_commits,
             get_commit_details,
             get_git_diff,

@@ -19,4 +19,3 @@ export type FileTreeNode = DirectoryEntry & {
   gitStatus?: GitStatus;
   isIgnored?: boolean;
 };
-

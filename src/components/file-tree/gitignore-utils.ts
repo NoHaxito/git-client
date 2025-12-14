@@ -1,5 +1,5 @@
-import { normalizePath } from "./utils";
 import { useReadFile } from "@/hooks/tauri-queries";
+import { normalizePath } from "./utils";
 
 function parseGitignore(content: string): string[] {
   return content

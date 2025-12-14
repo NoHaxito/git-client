@@ -9,4 +9,3 @@ export function normalizePath(path: string, repoRoot: string): string {
 }
 
 export const PATH_SEPARATOR_REGEX = /[/\\]/;
-

@@ -76,4 +76,3 @@ export function timeAgo(timestamp: number): string {
   }
   return `${years} year${years === 1 ? "" : "s"} ago`;
 }
-

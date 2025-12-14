@@ -94,7 +94,7 @@ export default function ProjectFilesFilepathDiff() {
       <ContextMenuTrigger
         render={<DiffViewer diffContent={content} filePath={decodedPath} />}
       />
-      <ContextMenuPopup>
+      <ContextMenuPopup align="start">
         <ContextMenuItem onClick={handleCloseFile}>
           <XIcon className="size-4" />
           Close File

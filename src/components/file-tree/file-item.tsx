@@ -30,7 +30,7 @@ export function FileItem({
     >
       <SidebarMenuButton
         className={cn(
-          "h-6 gap-1.5 px-1.5 text-xs",
+          "h-6 gap-1.5 px-1.5 text-xs data-popup-open:bg-accent",
           node.isIgnored && "opacity-50"
         )}
         isActive={isActive}
@@ -45,7 +45,7 @@ export function FileItem({
           hidden: false,
         }}
       >
-        <FileIcon className={cn("size-3 shrink-0", statusColor)} />
+        <FileIcon className={cn("size-4 shrink-0", statusColor)} />
         <span className="min-w-0 truncate">{node.name}</span>
         <GitStatusBadge status={node.gitStatus || null} />
       </SidebarMenuButton>

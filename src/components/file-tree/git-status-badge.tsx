@@ -54,7 +54,9 @@ export function GitStatusBadge({ status }: { status: GitStatus }) {
   }
 
   return (
-    <span className={cn("ml-auto shrink-0 pr-0.5 text-[10px] font-medium", color)}>
+    <span
+      className={cn("ml-auto shrink-0 pr-0.5 font-medium text-[10px]", color)}
+    >
       {letter}
     </span>
   );
@@ -63,4 +65,3 @@ export function GitStatusBadge({ status }: { status: GitStatus }) {
 export function getStatusColor(status: GitStatus): string {
   return getStatusColorHelper(status);
 }
-

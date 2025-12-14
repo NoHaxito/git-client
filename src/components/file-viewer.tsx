@@ -86,7 +86,7 @@ export function FileViewer({ filePath, fileContent }: FileViewerProps) {
           </div>
         }
       />
-      <ContextMenuPopup>
+      <ContextMenuPopup align="start">
         <ContextMenuItem onClick={handleCloseFile}>
           <XIcon className="size-4" />
           Close File

@@ -77,6 +77,38 @@ export function useCheckoutGitBranch() {
   });
 }
 
+export function usePullGitRepo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      repoPath,
+      branchName,
+    }: {
+      repoPath: string;
+      branchName: string;
+    }) =>
+      invoke("pull_git_repo", {
+        repoPath,
+        branchName,
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["current-git-branch", variables.repoPath],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["git-status", variables.repoPath],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["git-commits", variables.repoPath],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["list-directory"],
+      });
+    },
+  });
+}
+
 const COMMITS_PAGE_SIZE = 50;
 
 export function useGitCommits(repoPath: string | null) {
@@ -249,10 +281,7 @@ type GlobalSearchResult = {
   commits: Commit[];
 };
 
-export function useGlobalSearch(
-  repoPath: string | null,
-  query: string | null
-) {
+export function useGlobalSearch(repoPath: string | null, query: string | null) {
   return useQuery({
     queryKey: ["global-search", repoPath, query],
     queryFn: () =>
