@@ -12,8 +12,8 @@ importers:
         specifier: 1.0.0-beta.6
         version: 1.0.0-beta.6(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@react-symbols/icons':
-        specifier: 1.3.0-beta.0
-        version: 1.3.0-beta.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        specifier: 1.3.0-beta.1
+        version: 1.3.0-beta.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.17(vite@6.4.1(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2))
@@ -484,8 +484,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@react-symbols/icons@1.3.0-beta.0':
-    resolution: {integrity: sha512-lCVNBMSedG3BIR+sGkMTzf+u7grtBpxsnlROY07Yyv1UX698YpeU0rd4hyqN92xxfJ6FHIkzklgaOslaN5U6UQ==}
+  '@react-symbols/icons@1.3.0-beta.1':
+    resolution: {integrity: sha512-HIDNgZT1OphTGAOK+rNIHbnqRhBUL5zUjiSItIOnPc/VdImWs+B+TE9I+/73pQifr3ZwoKytgWpKOnOnuYdXdw==}
     peerDependencies:
       react: '>= 16.8'
       react-dom: '>= 16.8'
@@ -1777,7 +1777,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@react-symbols/icons@1.3.0-beta.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
+  '@react-symbols/icons@1.3.0-beta.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
     dependencies:
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
