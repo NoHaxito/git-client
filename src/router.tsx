@@ -7,6 +7,7 @@ import ProjectFilesFilepath from "@/routes/project-files-filepath";
 import ProjectFilesFilepathDiff from "@/routes/project-files-filepath-diff";
 import ProjectLayout from "@/routes/project-layout";
 import { useRepoStore } from "@/stores/repo";
+import ProjectChanges from "./routes/project-changes";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: "commits/:hash",
         Component: ProjectCommitsHash,
+      },
+      {
+        path: "changes",
+        Component: ProjectChanges,
       },
     ],
   },

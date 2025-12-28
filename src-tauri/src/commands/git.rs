@@ -110,17 +110,21 @@ pub async fn get_git_status(repo_path: String) -> Result<HashMap<String, String>
             continue;
         }
 
-        let normalized_status = match status_code {
-            " M" | "M " => "modified",
-            "A " => "added",
-            "D " => "deleted",
-            "R " => "renamed",
-            "C " => "copied",
-            "U " => "unmerged",
-            "??" => "untracked",
-            "MM" => "modified-staged",
-            "AM" => "added-modified",
-            "AD" => "added-deleted",
+        let staged_char = status_code.chars().nth(0).unwrap_or(' ');
+        let working_char = status_code.chars().nth(1).unwrap_or(' ');
+
+        let normalized_status = match (staged_char, working_char) {
+            (' ', 'M') => "modified",
+            ('M', ' ') => "modified-staged",
+            ('M', 'M') => "modified-staged",
+            ('A', ' ') => "added",
+            ('A', 'M') => "added-modified",
+            ('A', 'D') => "added-deleted",
+            ('D', ' ') => "deleted",
+            ('R', ' ') => "renamed",
+            ('C', ' ') => "copied",
+            ('U', _) => "unmerged",
+            ('?', '?') => "untracked",
             _ => "unknown",
         };
 
@@ -746,4 +750,101 @@ pub async fn get_git_remote_origin(repo_path: String) -> Result<Option<String>, 
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     Ok(Some(stdout.trim().to_string()))
+}
+
+#[tauri::command]
+pub async fn stage_file(repo_path: String, file_path: String) -> Result<(), String> {
+    let repo = Path::new(&repo_path);
+
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+
+    let output = Command::new("git")
+        .arg("add")
+        .arg(&file_path)
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git add: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Git add failed: {}", stderr));
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn unstage_file(repo_path: String, file_path: String) -> Result<(), String> {
+    let repo = Path::new(&repo_path);
+
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+
+    let output = Command::new("git")
+        .arg("restore")
+        .arg("--staged")
+        .arg(&file_path)
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git restore --staged: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Git restore --staged failed: {}", stderr));
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn commit_changes(
+    repo_path: String,
+    message: String,
+) -> Result<String, String> {
+    let repo = Path::new(&repo_path);
+
+    if !repo.exists() {
+        return Err("Repository path does not exist".to_string());
+    }
+
+    let git_dir = repo.join(".git");
+    if !git_dir.exists() {
+        return Err("Not a git repository".to_string());
+    }
+
+    if message.trim().is_empty() {
+        return Err("Commit message cannot be empty".to_string());
+    }
+
+    let output = Command::new("git")
+        .arg("commit")
+        .arg("-m")
+        .arg(&message)
+        .current_dir(repo)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git commit: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Git commit failed: {}", stderr));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.trim().to_string())
 }

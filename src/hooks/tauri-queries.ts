@@ -109,6 +109,81 @@ export function usePullGitRepo() {
   });
 }
 
+export function useStageFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      repoPath,
+      filePath,
+    }: {
+      repoPath: string;
+      filePath: string;
+    }) =>
+      invoke("stage_file", {
+        repoPath,
+        filePath,
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["git-status", variables.repoPath],
+      });
+    },
+  });
+}
+
+export function useUnstageFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      repoPath,
+      filePath,
+    }: {
+      repoPath: string;
+      filePath: string;
+    }) =>
+      invoke("unstage_file", {
+        repoPath,
+        filePath,
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["git-status", variables.repoPath],
+      });
+    },
+  });
+}
+
+export function useCommitChanges() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      repoPath,
+      message,
+    }: {
+      repoPath: string;
+      message: string;
+    }) =>
+      invoke<string>("commit_changes", {
+        repoPath,
+        message,
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["git-status", variables.repoPath],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["git-commits", variables.repoPath],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["current-git-branch", variables.repoPath],
+      });
+    },
+  });
+}
+
 const COMMITS_PAGE_SIZE = 50;
 
 export function useGitCommits(repoPath: string | null) {

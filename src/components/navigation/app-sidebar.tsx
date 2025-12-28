@@ -2,6 +2,7 @@
 
 import {
   FileTextIcon,
+  GitBranchIcon,
   GitCommitIcon,
   GitPullRequestIcon,
   SearchIcon,
@@ -9,6 +10,7 @@ import {
 import * as React from "react";
 import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { ChangesContent } from "@/components/changes/changes-content";
 import { CommitsList } from "@/components/commits-list";
 import { FileTree } from "@/components/file-tree/file-tree";
 import {
@@ -36,6 +38,12 @@ const navMain = [
     title: "Files",
     path: "/project/files",
     icon: FileTextIcon,
+  },
+  {
+    id: "changes",
+    title: "Changes",
+    path: "/project/changes",
+    icon: GitBranchIcon,
   },
   {
     id: "commits",
@@ -69,6 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isFilesRoute = location.pathname.startsWith("/project/files");
   const isCommitsRoute = location.pathname.includes("/project/commits");
+  const isChangesRoute = location.pathname === "/project/changes";
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -90,7 +99,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar
-      className="h-full overflow-hidden *:data-[sidebar=sidebar]:flex-row"
+      className="h-full overflow-hidden border-transparent *:data-[sidebar=sidebar]:flex-row"
       collapsible="icon"
       {...props}
     >
@@ -103,9 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className="px-0">
               <SidebarMenu>
                 {navMain.map((item) => {
-                  const isActive =
-                    (item.path === "/project/files" && isFilesRoute) ||
-                    (item.path === "/project/commits" && isCommitsRoute);
+                  const isActive = location.pathname.startsWith(item.path);
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
@@ -147,9 +154,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar className="hidden flex-1 md:flex" collapsible="none">
         <SidebarHeader className="gap-3.5">
           <div className="flex w-full items-center justify-between">
-            <div className="font-medium text-base text-foreground">
+            <div className="px-2 font-medium text-base text-foreground">
               {isFilesRoute && "Files"}
               {isCommitsRoute && "Commits"}
+              {isChangesRoute && "Changes"}
             </div>
             {isFilesRoute && (
               <div className="flex items-center gap-1">
@@ -192,6 +200,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   rootPath={currentRepo}
                   searchQuery={debouncedSearchQuery}
                 />
+              )}
+              {currentRepo && isChangesRoute && (
+                <ChangesContent repoPath={currentRepo} />
               )}
             </SidebarGroupContent>
           </SidebarGroup>
