@@ -72,7 +72,7 @@ export function FileTreeItem({
   const handleFileClick = useCallback(
     (filePath: string) => {
       const encodedPath = encodeURIComponent(filePath);
-      navigate(`/project/files/view/${encodedPath}`);
+      navigate(`/project/file/view/${encodedPath}`);
     },
     [navigate]
   );
